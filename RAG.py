@@ -1,29 +1,22 @@
 import os
 import pickle
 import argparse
-from dotenv import load_dotenv
 
 from pymilvus import Collection, WeightedRanker, connections
 from langchain_community.embeddings import ClovaXEmbeddings
 from langchain_community.chat_models import ChatClovaX
 from langchain_milvus.retrievers import MilvusCollectionHybridSearchRetriever
 from langchain_core.runnables import RunnablePassthrough
-from langchain_core.prompts import PromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
+from utils.util import format_docs
 
 def main(arg):
     ## arguments
     query = arg.query
     k = arg.top_k
     w = arg.weight
-
-    ## Load API key
-    load_dotenv()
-    api_key = os.getenv("NCP_CLOVASTUDIO_API_KEY")
-    apigw_key = os.getenv("NCP_APIGW_API_KEY")
-    embed_url = os.getenv("EMBED_URL")
-    chat_url = os.getenv("CHAT_URL")
 
     ## Connect to VectorDB
     URI = os.path.join("data", "dense_recommendation.db")
@@ -36,18 +29,11 @@ def main(arg):
     ### chat model
     llm = ChatClovaX(
         model="HCX-003",
-        api_key=api_key,
-        apigw_api_key=apigw_key,
-        base_url=chat_url,
+        max_tokens=1024
     )
 
     ### dense embedding
-    dense_embedding = ClovaXEmbeddings(
-        model="clir-emb-dolphin",
-        api_key=api_key,
-        apigw_api_key=apigw_key,
-        base_url=embed_url,
-    )
+    dense_embedding = ClovaXEmbeddings(model="clir-emb-dolphin")
 
     ### sparse embedding
     EMBEDDING_PATH = os.path.join("model", "sparse_embedding.pkl")
@@ -56,7 +42,7 @@ def main(arg):
 
     ## Set hybrid retrieval model
     ### Set index parameter
-    sparse_search_params = {"metric_type": "IP", "prarms": {"nlist": 128}} ## need to modify
+    sparse_search_params = {"metric_type": "IP", "prarms": {"nlist": 3}} ## need to modify
     dense_search_params = {"metric_type": "IP", "params": {"drop_ratio_build": 0.2}} ## need to modify
 
     ### Get retrieval model
@@ -106,35 +92,20 @@ def main(arg):
         text_field="text",
     )
 
-    PROMPT_TEMPLATE = """
-    **식당**
-    {restaurant_retrieval}
+    QUERY_PROMPT_DIR = os.path.join("prompts", "query_prompt.txt")
+    SYSTEM_PROMPT_DIR = os.path.join("prompts", "system_prompt.txt")
+    with open(QUERY_PROMPT_DIR, "r") as f:
+        QUERY_PROMPT = f.read()
+    with open(SYSTEM_PROMPT_DIR, "r") as f:
+        SYSTEM_PROMPT = f.read()
 
-    **카페**
-    {cafe_retrieval}
-
-    **기타 활동**
-    {etc_retrieval}
-
-    Q.
-    {user_query}
-
-    A.
-    """
-
-    prompt = PromptTemplate(
-        template=PROMPT_TEMPLATE,
-        input_variables=[
-            "restaurant_retrieval",
-            "cafe_retrieval",
-            "etc_retrieval",
-            "user_query"
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", SYSTEM_PROMPT),
+            ("human", QUERY_PROMPT),
         ]
     )
 
-    def format_docs(docs):
-        return "\n\n".join(doc.metadata["name"] for doc in docs)
-    
     rag_chain = (
         {
             "restaurant_retrieval": restaurant_retrieval | format_docs,
