@@ -25,13 +25,14 @@ Recall
 
 def hit_rate(retrieved_docs, relevant_docs, k) : 
     '''
+    기능 : 전체 검색된 쿼리의 의도에 맞는 문서가 검색된 K개의 요약문이 얼마나 뽑혔나 확인
     args : 
         retrieved_docs : 모든 쿼리에 대한 리트리버 검색 결과 문서 집합
         relevant_docs : 모든 쿼리에 대한 정답 문서 집합
         k : TOP k 개
     
     returns :
-        hit_rate_k : 각 쿼리에 해당하는 관련 문서 포함 여부의 전체 쿼리에서의 확률. 높아야 좋음
+        hit_rate_k : hit_k에 대한 평균
 
     
     '''
@@ -53,25 +54,70 @@ def hit_rate(retrieved_docs, relevant_docs, k) :
     
     return hit_rate_k
         
-def mean_reciprocal_rank(retrieved_docs, relevant_docs) :
+def mean_reciprocal_rank(retrieved_docs, relevant_docs, k) :
     """
-    기능 : 
+    기능 : 검색된 문서 중 처음 등장하는 관련 요약의 순위 기반 평가
     args : 
         retrieved_docs : 모든 쿼리에 대한 리트리버 검색 결과 문서 집합
         relevant_docs : 모든 쿼리에 대한 정답 문서 집합
-    :return:
-        total_mrr_score : 스코어
+    :return
+        total_mrr_score : mrr_score에 대한 쳥균
     """
     rank_list = []
     for retrieved, relevant in zip(retrieved_docs, relevant_docs):
-
-                
-        for rank, doc in enumerate(retrieved, start=1):
+        top_k_docs = retrieved[:k]  
+        for rank, doc in enumerate(top_k_docs, start=1):
             if doc in relevant:
                 rank_list.append( 1 / rank )
                 break
     mrr_score = sum(rank_list) /  len(retrieved_docs)
     return mrr_score
+
+
+def precision(retrieved_docs, relevant_docs, k):
+    """
+    기능 : 정밀도. 검색된 요약 중 실제 관련 요약 비율
+
+    args :
+        retrieved_docs : 모든 쿼리에 대한 리트리버 검색 결과 문서 집합
+        relevant_docs : 모든 쿼리에 대한 정답 문서 집합
+        k: Top-k
+    return: 
+        precision_score : precision에 대한 평균
+    """
+    total_precision = 0
+    num_queries = len(retrieved_docs)
+
+    for retrieved, relevant in zip(retrieved_docs, relevant_docs):
+        relevant_in_top_k = sum(1 for doc in retrieved[:k] if doc in relevant)
+        total_precision += relevant_in_top_k / k
+
+    precision_score = total_precision / num_queries
+    return precision_score
+
+
+def recall_at_k(retrieved_docs, relevant_docs, k):
+    """
+    기능 : 전체 관련 문서 중에서 실제로 검색된 문서의 비율
+
+    args :
+    
+        retrieved_docs : 모든 쿼리에 대한 리트리버 검색 결과 문서 집합
+        relevant_docs : 모든 쿼리에 대한 정답 문서 집합
+        k: Recall@k에서 k 값.
+    return: 
+        recall_score : 평균
+    """
+    total_recall = 0
+    num_queries = len(retrieved_docs)
+
+    for retrieved, relevant in zip(retrieved_docs, relevant_docs):
+        relevant_in_top_k = sum(1 for doc in retrieved[:k] if doc in relevant)
+        total_recall += relevant_in_top_k / len(relevant)
+    recall_score = total_recall / num_queries
+
+    return recall_score
+
 
 def main(): 
     # 코드 테스트 예시
@@ -93,11 +139,14 @@ def main():
     k = 2 #사용시 수정
 
     hit_rate_k = hit_rate(retrieved_docs, relevant_docs, k)
-    mrr_value = mean_reciprocal_rank(retrieved_docs, relevant_docs)
+    mrr_value = mean_reciprocal_rank(retrieved_docs, relevant_docs, k)
+    precision_k = precision(retrieved_docs, relevant_docs, k)
+    recall_k = recall_at_k(retrieved_docs, relevant_docs, k)
     
     print(f"Hit Rate@{k}: {hit_rate_k:.2f}")
-    print(f"MRR: {mrr_value}")
+    print(f"MRR@{k}: {mrr_value}")
+    print(f"Precision@{k}: {precision_k:.2f}")    
+    print(f"Recall@{k}: {recall_k:.2f}")
     
-
 if __name__ == "__main__":
     main()
