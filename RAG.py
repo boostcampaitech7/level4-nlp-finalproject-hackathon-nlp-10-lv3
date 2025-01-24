@@ -14,13 +14,15 @@ from utils.util import format_docs
 
 def main(arg):
     ## arguments
-    query = arg.query
+    query = "한적한 분위기의 코스 추천해줘"
     k = arg.top_k
     w = arg.weight
 
     ## Connect to VectorDB
     URI = os.path.join("data", "dense_recommendation.db")
-    connections.connect(URI)
+    connections.connect(
+        uri=URI
+    )
 
     collection = Collection("User_Reviews")
     collection.load()
@@ -55,8 +57,9 @@ def main(arg):
         field_search_params=[dense_search_params, sparse_search_params],
         field_exprs=[
             'category is "식당"',
-            f'lat > lat_lb and lat < lat_ub',
-            f'log > log_lb and log < log_ub'
+            'category is "식당"',
+            # f'lat > lat_lb and lat < lat_ub',
+            # f'log > log_lb and log < log_ub'
         ],
         top_k=k,
         text_field="text",
@@ -69,9 +72,10 @@ def main(arg):
         field_embeddings=[dense_embedding, sparse_embedding],
         field_search_params=[dense_search_params, sparse_search_params],
         field_exprs=[
-            'category is "카페페"',
-            f'lat > lat_lb and lat < lat_ub',
-            f'log > log_lb and log < log_ub'
+            'category is "카페"',
+            'category is "카페"',
+            # f'lat > lat_lb and lat < lat_ub',
+            # f'log > log_lb and log < log_ub'
         ],
         top_k=k,
         text_field="text",
@@ -85,8 +89,9 @@ def main(arg):
         field_search_params=[dense_search_params, sparse_search_params],
         field_exprs=[
             'category is "기타"',
-            f'lat > lat_lb and lat < lat_ub',
-            f'log > log_lb and log < log_ub'
+            'category is "기타"',
+            # f'lat > lat_lb and lat < lat_ub',
+            # f'log > log_lb and log < log_ub'
         ],
         top_k=k,
         text_field="text",
@@ -123,12 +128,6 @@ def main(arg):
 
 if __name__ == "__main__":
     args = argparse.ArgumentParser()
-    args.add_argument(
-        "-q",
-        "--query",
-        type=str,
-        help="user query for search",
-    )
     args.add_argument(
         "-k",
         "--top_k",
