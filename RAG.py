@@ -52,7 +52,7 @@ def main(arg):
         collection=collection,
         rerank=WeightedRanker(w, 1-w),
         anns_fields=["dense_vector", "sparse_vector"],
-        output_fields=["id", "name"],
+        output_fields=["id", "name", "text"],
         field_embeddings=[dense_embedding, sparse_embedding],
         field_search_params=[dense_search_params, sparse_search_params],
         field_exprs=[
@@ -68,7 +68,7 @@ def main(arg):
         collection=collection,
         rerank=WeightedRanker(w, 1-w),
         anns_fields=["dense_vector", "sparse_vector"],
-        output_fields=["id", "name"],
+        output_fields=["id", "name", "text"],
         field_embeddings=[dense_embedding, sparse_embedding],
         field_search_params=[dense_search_params, sparse_search_params],
         field_exprs=[
@@ -84,7 +84,7 @@ def main(arg):
         collection=collection,
         rerank=WeightedRanker(w, 1-w),
         anns_fields=["dense_vector", "sparse_vector"],
-        output_fields=["id", "name"],
+        output_fields=["id", "name", "text"],
         field_embeddings=[dense_embedding, sparse_embedding],
         field_search_params=[dense_search_params, sparse_search_params],
         field_exprs=[
