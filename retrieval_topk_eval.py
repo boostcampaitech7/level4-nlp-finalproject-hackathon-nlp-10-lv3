@@ -20,8 +20,10 @@ Recall
 정답값
 쿼리
 
-
 '''
+
+
+
 
 def hit_rate(retrieved_docs, relevant_docs, k) : 
     '''
@@ -121,12 +123,14 @@ def recall_at_k(retrieved_docs, relevant_docs, k):
 
 def main(): 
     # 코드 테스트 예시
+    #retrieval answer
     retrieved_docs = [
         ["AI 기술이 발전하는 이유는 무엇인가요?", "AI 기술의 혁신적 변화", "AI 발전의 역사"],
         ["2025년 AI 트렌드는 어떤 것들이 있을까요?", "AI의 미래", "AI 기술 전망"],
         ["자율주행차의 발전과 미래 예측", "자율주행차 기술", "자율주행차의 현황"]
     ]
     
+    # Test data answer
     relevant_docs = [
         ["AI 기술의 발전, 이유", "AI 기술의 혁신적 변화"],
         ["2025년 AI 기술 트렌드", "AI의 미래"],
