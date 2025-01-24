@@ -37,10 +37,6 @@ def hit_rate(retrieved_docs, relevant_docs, k) :
     '''
     query_hit = []  # 0,1,0,1,1,1 ...
 
-    # hit_at_k = [
-    #     1 if any(doc in retrieved[:k] for doc in relevant) else 0
-    #     for retrieved, relevant in zip(retrieved_docs, relevant_docs)
-    # ]
     for retrieved, relevant in zip(retrieved_docs, relevant_docs):
         top_k_docs = retrieved[:k]
         hit = 0
@@ -57,20 +53,39 @@ def hit_rate(retrieved_docs, relevant_docs, k) :
     
     return hit_rate_k
         
+def mean_reciprocal_rank(retrieved_docs, relevant_docs) :
+    """
+    기능 : 
+    args : 
+        retrieved_docs : 모든 쿼리에 대한 리트리버 검색 결과 문서 집합
+        relevant_docs : 모든 쿼리에 대한 정답 문서 집합
+    :return:
+        total_mrr_score : 스코어
+    """
+    rank_list = []
+    for retrieved, relevant in zip(retrieved_docs, relevant_docs):
+
+                
+        for rank, doc in enumerate(retrieved, start=1):
+            if doc in relevant:
+                rank_list.append( 1 / rank )
+                break
+    mrr_score = sum(rank_list) /  len(retrieved_docs)
+    return mrr_score
 
 def main(): 
     # 코드 테스트 예시
-    # retrieved_docs = [
-    #     ["AI 기술이 발전하는 이유는 무엇인가요?", "AI 기술의 혁신적 변화", "AI 발전의 역사"],
-    #     ["2025년 AI 트렌드는 어떤 것들이 있을까요?", "AI의 미래", "AI 기술 전망"],
-    #     [ "자율주행차 기술", "자율주행차의 현황"]
-    # ]
+    retrieved_docs = [
+        ["AI 기술이 발전하는 이유는 무엇인가요?", "AI 기술의 혁신적 변화", "AI 발전의 역사"],
+        ["2025년 AI 트렌드는 어떤 것들이 있을까요?", "AI의 미래", "AI 기술 전망"],
+        ["자율주행차의 발전과 미래 예측", "자율주행차 기술", "자율주행차의 현황"]
+    ]
     
-    # relevant_docs = [
-    #     ["AI 기술의 발전, 이유", "AI 기술의 혁신적 변화"],
-    #     ["2025년 AI 기술 트렌드", "AI의 미래"],
-    #     ["자율주행차의 발전과 미래 예측"]
-    # ]
+    relevant_docs = [
+        ["AI 기술의 발전, 이유", "AI 기술의 혁신적 변화"],
+        ["2025년 AI 기술 트렌드", "AI의 미래"],
+        ["자율주행차의 발전과 미래 예측"]
+    ]
     
     
     
@@ -78,8 +93,10 @@ def main():
     k = 2 #사용시 수정
 
     hit_rate_k = hit_rate(retrieved_docs, relevant_docs, k)
-    print(f"Hit Rate@{k}: {hit_rate_k:.2f}")
+    mrr_value = mean_reciprocal_rank(retrieved_docs, relevant_docs)
     
+    print(f"Hit Rate@{k}: {hit_rate_k:.2f}")
+    print(f"MRR: {mrr_value}")
     
 
 if __name__ == "__main__":
