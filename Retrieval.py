@@ -12,7 +12,7 @@ def main(arg):
 
     ## Inputs
     query = "어버이날에 부모님과 함께 할 수 있는 코스를 생성해줘"
-    categories = ["식당", "카페", "전시/관람"]
+    categories = ["식당", "카페", "전시/관람"] ## user query 기반으로 선택된 categories
 
     ## Loda DB
     URI = os.path.join("data", "dense_recommendation.db")
@@ -56,7 +56,7 @@ def main(arg):
     requests = [dense_request, sparse_request]
     
     ### Dense-sparse ratio
-    ranker = WeightedRanker(w, 1-w)
+    ranker = WeightedRanker(w, 1-w) ## dense : sparse weight 설정정
 
     ## Search
     for category in categories:
@@ -65,7 +65,7 @@ def main(arg):
             reqs=requests,
             ranker=ranker,
             limit=k,
-            filter=f"category == {category}"
+            filter=f"category == {category}" ## 특정 category에 대한 필터링
         )
 
 if __name__ == "__main__":
