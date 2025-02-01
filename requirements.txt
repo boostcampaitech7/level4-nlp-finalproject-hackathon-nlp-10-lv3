@@ -1,0 +1,7 @@
+langchain-community
+langchain
+loguru
+geopy
+emoji
+requests
+pymysql
