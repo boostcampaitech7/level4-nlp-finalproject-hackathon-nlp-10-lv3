@@ -1,6 +1,8 @@
 import os
 from dotenv import load_dotenv
 
+from model.Retrieve import Retrieval
+
 
 if __name__ = "__main__":
     """
@@ -52,3 +54,24 @@ if __name__ = "__main__":
     """
     
     """
+
+    ## Inputs and Paramters (Requirements)
+    query = ""
+    w = 0.5
+    k = 30
+
+
+    ## Retrieval
+    ### Requirements
+    category_course = ["A", "B", "C", "D"]
+    lat = 113.513515
+    log = 68.5645648
+
+    ### Load retrieval module
+    retrieval = Retrieval(query, w, k)
+
+    ### Search
+    retrieved_outputs = {}
+    for category in category_course:
+        outputs = retrieval.search(category, lat, log)
+        retrieved_outputs[category] = outputs
