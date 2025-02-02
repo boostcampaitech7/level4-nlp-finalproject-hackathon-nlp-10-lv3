@@ -1,18 +1,37 @@
 import os
 from dotenv import load_dotenv
 
+# geopy util
+from utils.geopy_util import getLatLng
 
-if __name__ = "__main__":
+# database
+from db.database import SQLiteDatabase
+
+# MapAPI
+from mapAPI.TMapAPI import Tmap_API
+
+# Model
+from model.ChatModel import ClovaXChatModel
+
+load_dotenv()
+TMAP_API_KEY = os.getenv("TMAP_API_KEY")
+CLOVA_API_KEY = os.getenv("CLOVA_API_KEY")
+
+
+if __name__ == "__main__":
     """
     main.py
     - Streamlit의 UI 업데이트 담당
     - 각종 모델이나 모듈 호출
+    AI Hybrid Agent는 어떨까?
     """
 
-    chatModel = ClovaXChatModel()
-    naverMAP = NaverMap()
-    tMAP = T_Map()
+    chatModel = ClovaXChatModel(API_KEY=CLOVA_API_KEY)
+    # naverMAP = NaverMap()
+    tMAP = Tmap_API(API_KEY=TMAP_API_KEY)
+    database = SQLiteDatabase()
     reviewSearchModel = search_module()
+    
 
 
     # TODO: 사용자에게 정보를 입력받기 (in Streamlit)
@@ -24,10 +43,13 @@ if __name__ = "__main__":
 
     # TODO: 사용자가 입력한 장소에 대한 위, 경도 추출 (call MAP API Module) -> first place init
     """
-    geopy를 사용해서 입력된 장소에 대한 위,경도를 추출함 -> 사용자가 추천받고싶어하는 위치임
-    - Naver Map API는 왜 안되는가? : 사용자는 Naive하게 입력하는 경우가 많음, 따라서 그거에 맞춰서
+    1. geopy를 사용해서 입력된 장소에 대한 위,경도를 추출함 -> 사용자가 추천받고싶어하는 위치임
+    2. 해당 위치를 기반으로 반경 500M의 place 제한함
     """
     
+    start_place_latlng = getLatLng(start_place) # 위 경도 추출
+    # sql DB에서 장소 추출 (위경도 기준 반경 500M 추출)
+    candidate_places = SQLiteDatabase.find_nearby_businesses(start_place_latlng[0], start_place_latlng[1])
 
     # TODO: 시간과 요구사항에 맞는 "카테고리 기반 코스 추천" (call ChatModel)
     """
@@ -46,7 +68,22 @@ if __name__ = "__main__":
     TMap API사용해서 현재 장소(위경도)와 위에서 뽑은 후보지들과의 거리, 시간 추출
     (추가) Naver MAP API를 사용해서 자동차 거리, 시간도 추출, Direction 5
     """
-    
+    categories = ["식당1","카페","산책로","식당2"] # example
+    now_place = {}
+    selected = []
+    for category in categories:
+        selected_candidate = []
+        for candidate in candidate_places_from_review: # 현재 위치와 후보지들간의 거리 구하기
+            result = tMAP.get_direction_bet_coords_Tmap(
+                [now_place["lat"], now_place["lng"]],
+                [candidate["lat"], candidate["lng"]],
+                now_place["name"],
+                candidate["name"],
+                TMAP_API_KEY
+            )
+            selected_candidate.append(result)
+            # ChatModel로 후보지 선택
+        
 
     # TODO: streamlit에 표시
     """
