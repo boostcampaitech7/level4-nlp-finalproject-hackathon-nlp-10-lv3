@@ -42,7 +42,7 @@ def main():
     )
 
     schema.add_field(
-        field_name="reivew_id",
+        field_name="id",
         datatype=DataType.INT64,
         is_primary=True,
     )
@@ -115,15 +115,15 @@ def main():
         ## Insert entities into the collection
         entities = []
         category_ids = place_info[place_info["main_category"]==category]["id"]
-        review_df = place_review[place_review["id"] in category_ids]
+        review_df = place_review[place_review["id"].isin(category_ids)]
         for _, row in review_df.iterrows():
             info = place_info[place_info["id"]==row["id"]]
             entity = {
-                "review_id": info["id"],
-                "name": info["name"],
-                "sub_category": info["category"],
-                "latitude": info["latitude"],
-                "longitude": info["longitude"],
+                "id": info["id"].item(),
+                "name": info["name"].item(),
+                "sub_category": info["category"].item(),
+                "latitude": info["latitude"].item(),
+                "longitude": info["longitude"].item(),
                 "dense_vector": dense_embedding.embed_query(row["reviews"]),
                 "sparse_vector": sparse_embedding.embed_query(row["reviews"]),
                 "text": row["reviews"]
