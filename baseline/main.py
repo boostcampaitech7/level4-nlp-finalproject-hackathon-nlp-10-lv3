@@ -1,7 +1,9 @@
 import os
+import pandas as pd
 from dotenv import load_dotenv
 
 from model.Retrieve import Retrieval
+from utils.category import Category
 
 
 if __name__ = "__main__":
@@ -34,7 +36,16 @@ if __name__ = "__main__":
     # TODO: 시간과 요구사항에 맞는 "카테고리 기반 코스 추천" (call ChatModel)
     """
     ChatModel을 사용해서 카테고리 기반 코스를 추출하는 코드
-    """
+    """    
+    input_dict = {
+        'request' : "",
+        'age' : '',
+        'sex' : '',
+        'start_time' : ''
+    } # 이거는 윗단에서 어떻게 처리할지 몰라 딕셔너리 형태로 설정
+    category_generator = Category(chatModel, "place_info_data_path")
+    big_category = category_generator.get_big_category(input_dict) # List[str]
+    choosed_category = category_generator.get_small_category(big_category, input_dict) # List[Tuple[str, List[str]]]
 
 
     # TODO: 카테고리에 맞는 후보지 추출 (call Retrieve Module)
