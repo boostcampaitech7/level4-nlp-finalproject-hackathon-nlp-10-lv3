@@ -8,12 +8,12 @@ from langchain_milvus.utils.sparse import BM25SparseEmbedding
 
 def main():
     ## Generate milvus database
-    URI = os.path.join("data", "dense_recommendation.db")
+    URI = os.path.join("data", "course_rcmd_ns.db")
     client = MilvusClient(URI)
 
     ## Load places dataset
-    info_file_name = "place_info"
-    review_file_name = "place_review"
+    info_file_name = "place_info.csv"
+    review_file_name = "place_review.csv"
     place_info = pd.read_csv(os.path.join("data", info_file_name))
     place_review = pd.read_csv(os.path.join("data", review_file_name))
 
