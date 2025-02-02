@@ -52,11 +52,6 @@ def main():
         max_length=30,
     )
     schema.add_field(
-        field_name="main_category",
-        datatype=DataType.VARCHAR,
-        max_length=30,
-    )
-    schema.add_field(
         field_name="sub_category",
         datatype=DataType.VARCHAR,
         max_length=30,
@@ -126,7 +121,6 @@ def main():
             entity = {
                 "review_id": info["id"],
                 "name": info["name"],
-                "main_category": info["main_category"],
                 "sub_category": info["category"],
                 "latitude": info["latitude"],
                 "longitude": info["longitude"],
