@@ -52,9 +52,22 @@ def main():
         max_length=30,
     )
     schema.add_field(
-        field_name="category",
+        field_name="main_category",
         datatype=DataType.VARCHAR,
-        max_length=2,  ## (식당, 카페, 기타)
+        max_length=30,
+    )
+    schema.add_field(
+        field_name="sub_category",
+        datatype=DataType.VARCHAR,
+        max_length=30,
+    )
+    schema.add_field(
+        field_name="latitude",
+        datatype=DataType.FLOAT,
+    )
+    schema.add_field(
+        field_name="longitude",
+        datatype=DataType.FLOAT,
     )
     schema.add_field(
         field_name="dense_vector",
