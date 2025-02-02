@@ -98,41 +98,53 @@ def main():
         metric_type="IP",
     )
 
-    ## Create a collection
-    collection_name = "User_Reviews"
-    client.create_collection(
-        collection_name=collection_name,
-        schema=schema,
-        consistency_level="Strong",
-    )
+## Create collections by categories
+    for category in categories:
+        print(f"**{category}**")
+        
+        ## Create a collection
+        collection_name = category
+        client.create_collection(
+            collection_name=collection_name,
+            schema=schema,
+            consistency_level="Strong",
+        )
 
-    ## Create indexes
-    client.create_index(
-        collection_name=collection_name,
-        index_params=index_params,
-    )
-    print("...Collection is successfully created")
+        ## Create indexes
+        client.create_index(
+            collection_name=collection_name,
+            index_params=index_params,
+        )
+        print(f"...Collection for category-{category} is successfully created")
 
-    ## Insert entities into the collection
-    entities = []
-    for text in texts:
-        entity = {
-            "id": text["id"],
-            "name": text["name"],
-            "category": text["category"],
-            "dense_vector": dense_embedding.embed_query(text["text"]),
-            "sparse_vector": sparse_embedding.embed_query(text["text"]),
-            "text": text["text"]
-        }
-        entities.append(entity)
+        ## Insert entities into the collection
+        entities = []
+        category_ids = place_info[place_info["main_category"]==category]["id"]
+        review_df = place_review[place_review["id"] in category_ids]
+        for _, row in review_df.iterrows():
+            info = place_info[place_info["id"]==row["id"]]
+            entity = {
+                "review_id": info["id"],
+                "name": info["name"],
+                "main_category": info["main_category"],
+                "sub_category": info["category"],
+                "latitude": info["latitude"],
+                "longitude": info["longitude"],
+                "dense_vector": dense_embedding.embed_query(row["reviews"]),
+                "sparse_vector": sparse_embedding.embed_query(row["reviews"]),
+                "text": row["reviews"]
+            }
+            entities.append(entity)
 
-    res = client.insert(
-        collection_name=collection_name,
-        data=entities
-    )
+        res = client.insert(
+            collection_name=collection_name,
+            data=entities
+        )
 
-    print(f"Result: {res["insert_count"]}/{len(entities)-res["insert_count"]} (Success/Fail)")
-    print(f"It takes.. {res["cost"]//60}M {res["cost"]%60}S")
+        insert_count = res["insert_count"]
+        cost = res["cost"]
+        print(f"Result: {insert_count}/{len(entities)-insert_count} (Success/Fail)")
+        print(f"It takes.. {cost//60}M {cost%60}S\n")
 
 if __name__ == "__main__":
     main()
