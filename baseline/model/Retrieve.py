@@ -62,10 +62,21 @@ class Retrieval():
         return [dense_request, sparse_request]
     
     def search(self, coll_name, lat, log):
-        return self.client.hybrid_serach(
+        res = self.client.hybrid_serach(
             collection_name=coll_name,
             reqs=self.requests,
             ranker=self.ranker,
             limit=self.k,
-            filter=f"latitude <= {lat+0.005} and latitude >= {lat-0.005} and longitude <= {log+0.005} and longitude >= {log-0.005}"
+            filter=f"latitude <= {lat+0.005} and latitude >= {lat-0.005} and longitude <= {log+0.005} and longitude >= {log-0.005}",
+            output_fields=["name", "text", "id"]
         )
+
+        outputs = [
+            {
+                "id": output["id"],
+                "name": output["name"],
+                "score": output["distance"],
+                "text": output["entity"]["text"],
+            } for output in res[0]
+        ]
+        return outputs
