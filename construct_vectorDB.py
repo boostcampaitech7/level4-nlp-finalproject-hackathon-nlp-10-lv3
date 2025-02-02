@@ -76,7 +76,7 @@ def main():
 
     index_params.add_index(
         field_name="dense_vector",
-        index_type="IVF_FLAT",
+        index_type="FLAT",
         metric_type="IP",
     )
     index_params.add_index(
