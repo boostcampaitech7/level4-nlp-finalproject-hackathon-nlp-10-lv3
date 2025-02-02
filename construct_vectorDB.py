@@ -27,7 +27,7 @@ def main():
 
     ## Set sparse embedding model
     sparse_embedding = BM25SparseEmbedding(
-        corpus=[text["text"] for text in place_review["reviews"]],
+        corpus=[text for text in place_review["reviews"]],
         language="kr"
     )
     EMBEDDING_PATH = os.path.join("model", "sparse_embedding.pkl")
