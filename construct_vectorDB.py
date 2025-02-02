@@ -1,5 +1,6 @@
 import os
 import pickle
+import time
 
 import pandas as pd
 from pymilvus import MilvusClient, DataType
@@ -129,6 +130,7 @@ def main():
                 "text": row["reviews"]
             }
             entities.append(entity)
+            time.sleep(1)
 
         res = client.insert(
             collection_name=collection_name,
