@@ -112,11 +112,27 @@ def main():
         entities = []
         places_for_category = places[places["main_category"]==category]
         for _, row in places_for_category.iterrows():
+            ### standardization
+            pos_emb = dense_embedding.embed_query(row["pos_review"])
+            neg_emb = dense_embedding.embed_query(row["neg_review"])
+
+            pos_denominator = sum([element**2 for element in pos_emb])
+            pos_emb = [element/pos_denominator for element in pos_emb] ## 이렇게 했을 때, 값이 너무 작아서 0이 될 수도 있으려나?
+            neg_denominator = sum([element**2 for element in neg_emb])
+            neg_emb = [element/neg_denominator for element in neg_emb]
+
+            ### weighted dense embedding
+            w = row["pos_cnt"]/(row["pos_cnt"]+row["neg_cnt"])
+            weighted_pos_emb = [element*w for element in pos_emb]
+            weighted_neg_emb = [element*(1-w) for element in neg_emb]
+            tot_emb = [pos-neg for pos, neg in zip(weighted_pos_emb, weighted_neg_emb)]
+
+            ### make entity
             entity = {
                 "id": row["id"],
                 "name": row["name"],
                 "sub_category": row["category"],
-                "dense_vector": dense_embedding.embed_query(row["review"]),
+                "dense_vector": tot_emb,
                 "sparse_vector": sparse_embedding.embed_query(row["review"]),
                 "text": row["review"]
             }
