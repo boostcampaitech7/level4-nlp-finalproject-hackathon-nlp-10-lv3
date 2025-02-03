@@ -10,17 +10,14 @@ from langchain_milvus.utils.sparse import BM25SparseEmbedding
 
 def main():
     ## Generate milvus database
-    URI = os.path.join("data", "course_rcmd_ns.db")
+    URI = os.path.join("data", "course_rcmd.db")
     client = MilvusClient(URI)
 
     ## Load places dataset
-    info_file_name = "place_info.csv"
-    review_file_name = "place_review.csv"
-    place_info = pd.read_csv(os.path.join("data", info_file_name))
-    place_review = pd.read_csv(os.path.join("data", review_file_name))
+    places = pd.read_csv(os.path.join("data", "places.csv"))
 
     ## Get category set for all places
-    categories = place_info["main_category"].tolist()
+    categories = places["main_category"].tolist()
 
     ## Set dense embedding model
     dense_embedding = ClovaXEmbeddings(model="clir-emb-dolphin")
@@ -29,7 +26,7 @@ def main():
 
     ## Set sparse embedding model
     sparse_embedding = BM25SparseEmbedding(
-        corpus=[text for text in place_review["reviews"]],
+        corpus=[text for text in places["review"]],
         language="kr"
     )
     EMBEDDING_PATH = os.path.join("model", "sparse_embedding.pkl")
@@ -57,14 +54,6 @@ def main():
         field_name="sub_category",
         datatype=DataType.VARCHAR,
         max_length=30,
-    )
-    schema.add_field(
-        field_name="latitude",
-        datatype=DataType.FLOAT,
-    )
-    schema.add_field(
-        field_name="longitude",
-        datatype=DataType.FLOAT,
     )
     schema.add_field(
         field_name="dense_vector",
@@ -121,19 +110,15 @@ def main():
 
         ## Insert entities into the collection
         entities = []
-        category_ids = place_info[place_info["main_category"]==category]["id"]
-        review_df = place_review[place_review["id"].isin(category_ids)]
-        for _, row in review_df.iterrows():
-            info = place_info[place_info["id"]==row["id"]]
+        places_for_category = places[places["main_category"]==category]
+        for _, row in places_for_category.iterrows():
             entity = {
-                "id": info["id"].item(),
-                "name": info["name"].item(),
-                "sub_category": info["category"].item(),
-                "latitude": info["latitude"].item(),
-                "longitude": info["longitude"].item(),
-                "dense_vector": dense_embedding.embed_query(row["reviews"]),
-                "sparse_vector": sparse_embedding.embed_query(row["reviews"]),
-                "text": row["reviews"]
+                "id": row["id"],
+                "name": row["name"],
+                "sub_category": row["category"],
+                "dense_vector": dense_embedding.embed_query(row["review"]),
+                "sparse_vector": sparse_embedding.embed_query(row["review"]),
+                "text": row["review"]
             }
             entities.append(entity)
             time.sleep(1)
