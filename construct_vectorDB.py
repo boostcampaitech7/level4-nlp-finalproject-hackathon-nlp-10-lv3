@@ -137,7 +137,7 @@ def main():
                 "text": row["review"]
             }
             entities.append(entity)
-            time.sleep(1)
+            time.sleep(2)
 
         res = client.insert(
             collection_name=collection_name,
