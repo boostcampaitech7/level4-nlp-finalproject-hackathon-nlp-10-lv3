@@ -8,6 +8,8 @@ from pymilvus import MilvusClient, DataType
 from langchain_community.embeddings import ClovaXEmbeddings
 from langchain_milvus.utils.sparse import BM25SparseEmbedding
 
+from utils.util import coll_name_mapping
+
 def main():
     ## Generate milvus database
     URI = os.path.join("data", "course_rcmd.db")
@@ -84,17 +86,12 @@ def main():
         metric_type="IP",
     )
 
-    ## Make collection name mapping
-    coll_name_mapping = {category: f"collection_{i}" for i, category in enumerate(categories)}
-    with open('coll_name_mapping.json', 'w', encoding='utf-8') as f:
-        json.dump(coll_name_mapping, f, ensure_ascii=False)
-
     ## Create collections by categories
     for category in categories:
         print(f"**{category}**")
         
         ## Create a collection
-        collection_name = coll_name_mapping[category]
+        collection_name = coll_name_mapping(category)
         client.create_collection(
             collection_name=collection_name,
             schema=schema,
