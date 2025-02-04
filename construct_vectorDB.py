@@ -19,7 +19,7 @@ def main():
     places = pd.read_csv(os.path.join("data", "places.csv"))
 
     ## Get category set for all places
-    categories = places["main_category"].tolist()
+    categories = places["main_category"].unique().tolist()
 
     ## Set dense embedding model
     dense_embedding = ClovaXEmbeddings(model="clir-emb-dolphin")
