@@ -59,16 +59,18 @@ if __name__ == "__main__":
     2. 해당 위치를 기반으로 반경 500M의 place 제한함
     """
     
-    start_place_latlng = getLatLng(start_place) # 위 경도 추출
+    start_place_latlng = getLatLng(place) # 위 경도 추출
     # sql DB에서 장소 추출 (위경도 기준 반경 500M 추출)
     candidate_places = SQLiteDatabase.find_nearby_businesses(start_place_latlng[0], start_place_latlng[1])
-
+    place_ids = [cand["id"] for cand in candidate_places]
+    
+    
     # TODO: 시간과 요구사항에 맞는 "카테고리 기반 코스 추천" (call ChatModel)
     """
     ChatModel을 사용해서 카테고리 기반 코스를 추출하는 코드
     """
     input_dict = {
-        'request' : "",
+        'request' : query,
         'age' : '',
         'sex' : '',
         'start_time' : ''
@@ -91,11 +93,6 @@ if __name__ == "__main__":
     k = 30
 
     ## Retrieval
-    ### Requirements
-    category_course = ["A", "B", "C", "D"]
-    lat = 113.513515
-    log = 68.5645648
-
     ### Load retrieval module
     retrieval = Retrieval(query, w, k)
 
@@ -111,12 +108,11 @@ if __name__ == "__main__":
     TMap API사용해서 현재 장소(위경도)와 위에서 뽑은 후보지들과의 거리, 시간 추출
     (추가) Naver MAP API를 사용해서 자동차 거리, 시간도 추출, Direction 5
     """
-    categories = ["식당1","카페","산책로","식당2"] # example
-    now_place = {}
+    now_place = {"name": place, "lat": start_place_latlng[0], "lng": start_place_latlng[1],} # init
     selected = []
-    for category in categories:
+    for category in choosed_category:
         selected_candidate = []
-        for candidate in retrieved_outputs[category]: # 현재 위치와 후보지들간의 거리 구하기
+        for candidate in retrieved_outputs[category[0]]: # 현재 위치와 후보지들간의 거리 구하기
             """ candidate Data list
             { ## rank-1
                 "id": id of place,
@@ -134,9 +130,9 @@ if __name__ == "__main__":
                 TMAP_API_KEY
             ) # 각 후보지 당 distance_walking, time
             sel_info = { # 프롬프트에 줄 정보
+                "id": candidate["id"],
                 "name": candidate["name"],
                 "address": candidate_place_info["address"],
-                "rating": candidate_place_info["rating"],
                 "text": candidate["text"],
                 "distance": result["distance_walking"],
                 "time": result["time"]
@@ -145,14 +141,30 @@ if __name__ == "__main__":
 
         # chatX Model을 사용해서 장소 추천
         rec = Recommend(ClovaXChatModel)
-        recommend_query = rec.generate_prompt(now_place["name"] ,requirements, selected_candidate)
+        recommend_query = rec.generate_prompt(now_place["name"], query, selected_candidate)
         response_rec = rec.invoke_message(recommend_query)
         
         # Parsing Response
-    
+        parsing_output = rec.parse_output(response_rec)
+        recommend_id = parsing_output["id"]
+        recommend_place_info = get_candidate_place(candidate_places, recommend_id)
+
+        for candidate in retrieved_outputs[category]:
+            if candidate["id"] == recommend_id:
+                recommend_review = candidate["text"]
+                break
         
-
-
+        # streamlit에 표시할 선택지 저장
+        select_place = {"name":recommend_place_info["name"],
+                    "address":recommend_place_info["address"],
+                    "rating":recommend_place_info["rating"],
+                    "category":category,
+                    "review": recommend_review}
+        selected.append(select_place)
+        # now_place 업데이트
+        now_place = {"name":recommend_place_info["name"],
+                     "lat": recommend_place_info["lat"],
+                     "lng": recommend_place_info["lng"]}
 
     # TODO: streamlit에 표시
     """
