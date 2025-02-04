@@ -6,11 +6,7 @@ import pickle
 from pymilvus import MilvusClient, AnnSearchRequest, WeightedRanker
 from langchain_community.embeddings import ClovaXEmbeddings
 
-project_root = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..', '..', '..')
-)
-sys.path.append(project_root)
-from utils.util import coll_name_mapping
+from utils import coll_name_mapping
 
 class Retrieval():
     def __init__(
