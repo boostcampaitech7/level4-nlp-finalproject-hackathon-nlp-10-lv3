@@ -1,9 +1,9 @@
 import os
-import json
 import pickle
 
 from pymilvus import MilvusClient, AnnSearchRequest, WeightedRanker
 from langchain_community.embeddings import ClovaXEmbeddings
+from utils import coll_name_mapping
 
 class Retrieval():
     def __init__(
@@ -16,7 +16,6 @@ class Retrieval():
         self.k = k
         
         self.client = self.load_DB()
-        self.coll_name_mapping = self.call_mapping()
         self.ranker = WeightedRanker(w, 1-w)
         self.requests = self.make_request(query)
         return
@@ -24,12 +23,6 @@ class Retrieval():
     def load_DB(self):
         URI = os.path.join("..", "data", "dense_recommendation.db")
         return MilvusClient(URI)
-    
-    def call_mapping(self):
-        PATH = os.path.join("..", "utils", "coll_name_mapping.json")
-        with open(PATH, 'r', encoding='utf-8') as f:
-            mapping = json.load(f)
-        return mapping
             
     def call_dense(self):
         return ClovaXEmbeddings(model="clir-emb-dolphin")
@@ -69,13 +62,13 @@ class Retrieval():
         sparse_request = AnnSearchRequest(**sparse_search_params)
         return [dense_request, sparse_request]
     
-    def search(self, category, lat, log):
+    def search(self, category, place_ids):
         res = self.client.hybrid_serach(
-            collection_name=self.coll_name_mapping[category],
+            collection_name=coll_name_mapping[category],
             reqs=self.requests,
             ranker=self.ranker,
             limit=self.k,
-            filter=f"latitude <= {lat+0.005} and latitude >= {lat-0.005} and longitude <= {log+0.005} and longitude >= {log-0.005}",
+            filter=f'id in {place_ids}',
             output_fields=["name", "text", "id"]
         )
 

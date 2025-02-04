@@ -1,6 +1,6 @@
 # Data
-.csv
-.db
+*.csv
+*.db
 data/
 
 # dotenv
