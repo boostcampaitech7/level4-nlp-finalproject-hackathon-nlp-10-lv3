@@ -62,7 +62,9 @@ if __name__ == "__main__":
     start_place_latlng = getLatLng(place) # 위 경도 추출
     # sql DB에서 장소 추출 (위경도 기준 반경 500M 추출)
     candidate_places = SQLiteDatabase.find_nearby_businesses(start_place_latlng[0], start_place_latlng[1])
-
+    place_ids = [cand["id"] for cand in candidate_places]
+    
+    
     # TODO: 시간과 요구사항에 맞는 "카테고리 기반 코스 추천" (call ChatModel)
     """
     ChatModel을 사용해서 카테고리 기반 코스를 추출하는 코드
@@ -97,7 +99,7 @@ if __name__ == "__main__":
     ### Search
     retrieved_outputs = {}
     for category in choosed_category:
-        outputs = retrieval.search(category[0], lat, log)
+        outputs = retrieval.search(category[0], place_ids) ## candidate_place의 output에서 id만 뽑아서 place_ids로 활용
         retrieved_outputs[category[0]] = outputs
     
 
@@ -163,9 +165,6 @@ if __name__ == "__main__":
         now_place = {"name":recommend_place_info["name"],
                      "lat": recommend_place_info["lat"],
                      "lng": recommend_place_info["lng"]}
-        
-
-
 
     # TODO: streamlit에 표시
     """
