@@ -1,5 +1,4 @@
 import os
-import json
 import pickle
 import time
 
@@ -145,6 +144,8 @@ def main():
         cost = res["cost"]
         print(f"Result: {insert_count}/{len(entities)-insert_count} (Success/Fail)")
         print(f"It takes.. {cost//60}M {cost%60}S\n")
+
+        client.close()
 
 if __name__ == "__main__":
     main()
