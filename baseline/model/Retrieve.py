@@ -1,6 +1,4 @@
 import os
-import sys
-import json
 import pickle
 
 from pymilvus import MilvusClient, AnnSearchRequest, WeightedRanker
@@ -67,7 +65,7 @@ class Retrieval():
     
     def search(self, category, place_ids):
         res = self.client.hybrid_serach(
-            collection_name=self.coll_name_mapping[category],
+            collection_name=coll_name_mapping[category],
             reqs=self.requests,
             ranker=self.ranker,
             limit=self.k,
