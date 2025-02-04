@@ -1,9 +1,16 @@
 import os
+import sys
 import json
 import pickle
 
 from pymilvus import MilvusClient, AnnSearchRequest, WeightedRanker
 from langchain_community.embeddings import ClovaXEmbeddings
+
+project_root = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..', '..')
+)
+sys.path.append(project_root)
+from utils.util import coll_name_mapping
 
 class Retrieval():
     def __init__(
@@ -16,7 +23,6 @@ class Retrieval():
         self.k = k
         
         self.client = self.load_DB()
-        self.coll_name_mapping = self.call_mapping()
         self.ranker = WeightedRanker(w, 1-w)
         self.requests = self.make_request(query)
         return
@@ -24,12 +30,6 @@ class Retrieval():
     def load_DB(self):
         URI = os.path.join("..", "data", "dense_recommendation.db")
         return MilvusClient(URI)
-    
-    def call_mapping(self):
-        PATH = os.path.join("..", "utils", "coll_name_mapping.json")
-        with open(PATH, 'r', encoding='utf-8') as f:
-            mapping = json.load(f)
-        return mapping
             
     def call_dense(self):
         return ClovaXEmbeddings(model="clir-emb-dolphin")
