@@ -3,7 +3,6 @@ from typing import List, Dict, Tuple
 import pandas as pd
 
 class Category:
-    
     def __init__(self, chatModel, data_path: str, extract_symbol="$%^&"):
         self.chatModel = chatModel
 
