@@ -69,13 +69,13 @@ class Retrieval():
         sparse_request = AnnSearchRequest(**sparse_search_params)
         return [dense_request, sparse_request]
     
-    def search(self, category, lat, log):
+    def search(self, category, place_ids):
         res = self.client.hybrid_serach(
             collection_name=self.coll_name_mapping[category],
             reqs=self.requests,
             ranker=self.ranker,
             limit=self.k,
-            filter=f"latitude <= {lat+0.005} and latitude >= {lat-0.005} and longitude <= {log+0.005} and longitude >= {log-0.005}",
+            filter=f'id in {place_ids}',
             output_fields=["name", "text", "id"]
         )
 
