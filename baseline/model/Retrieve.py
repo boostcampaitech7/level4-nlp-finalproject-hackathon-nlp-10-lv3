@@ -5,7 +5,6 @@ import pickle
 
 from pymilvus import MilvusClient, AnnSearchRequest, WeightedRanker
 from langchain_community.embeddings import ClovaXEmbeddings
-
 from utils import coll_name_mapping
 
 class Retrieval():

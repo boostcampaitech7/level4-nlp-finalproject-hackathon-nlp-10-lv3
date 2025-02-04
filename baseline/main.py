@@ -1,8 +1,11 @@
 import os
+import pandas as pd
 from dotenv import load_dotenv
 
 # geopy util
 from utils.geopy_util import getLatLng
+from model.Retrieve import Retrieval
+from utils.category import Category
 
 # database
 from db.database import SQLiteDatabase
@@ -78,10 +81,10 @@ if __name__ == "__main__":
     category_generator = Category(chatModel, "place_info_data_path")
     big_category = category_generator.get_big_category(input_dict) # List[str]
     choosed_category = category_generator.get_small_category(big_category, input_dict) # List[Tuple[str, List[str]]]
+
     #[(big category), (small category)]
     #[("대분류1", ["소분류1"]), ("대분류2", ["소분류2"])]
     
-
     # TODO: 카테고리에 맞는 후보지 추출 (call Retrieve Module)
     """
     Retreieve 모듈로 선택된 카테고리들에 대한 후보지들을 불러오기
@@ -170,3 +173,24 @@ if __name__ == "__main__":
     """
     
     """
+
+    ## Inputs and Paramters (Requirements)
+    query = ""
+    w = 0.5
+    k = 30
+
+
+    ## Retrieval
+    ### Requirements
+    category_course = ["A", "B", "C", "D"]
+    lat = 113.513515
+    log = 68.5645648
+
+    ### Load retrieval module
+    retrieval = Retrieval(query, w, k)
+
+    ### Search
+    retrieved_outputs = {}
+    for category in category_course:
+        outputs = retrieval.search(category, lat, log)
+        retrieved_outputs[category] = outputs
