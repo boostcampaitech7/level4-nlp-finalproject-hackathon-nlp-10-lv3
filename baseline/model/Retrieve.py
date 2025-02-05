@@ -23,6 +23,9 @@ class Retrieval():
     def load_DB(self):
         URI = os.path.join("..", "db", "dense_recommendation.db")
         return MilvusClient(URI)
+    
+    def close_DB(self):
+        self.client.close()
             
     def call_dense(self):
         return ClovaXEmbeddings(model="clir-emb-dolphin")

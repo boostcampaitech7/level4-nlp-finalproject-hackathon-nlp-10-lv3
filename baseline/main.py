@@ -104,6 +104,7 @@ if __name__ == "__main__":
     for category in choosed_category:
         outputs = retrieval.search(category[0], place_ids) ## candidate_place의 output에서 id만 뽑아서 place_ids로 활용
         retrieved_outputs[category[0]] = outputs
+    retrieval.close_DB()
     
 
     # TODO: 현재 선택된 장소 (좌표) 기반으로 카테고리에 맞는 후보지들 선택 -> 마지막 카테고리까지 선택
@@ -166,8 +167,8 @@ if __name__ == "__main__":
         selected.append(select_place)
         # now_place 업데이트
         now_place = {"name":recommend_place_info["name"],
-                     "lat": recommend_place_info["lat"],
-                     "lng": recommend_place_info["lng"]}
+                    "lat": recommend_place_info["lat"],
+                    "lng": recommend_place_info["lng"]}
 
     # TODO: streamlit에 표시
     """
