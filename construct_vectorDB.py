@@ -112,10 +112,10 @@ def main():
             pos_emb = dense_embedding.embed_query(row["pos_review"])
             neg_emb = dense_embedding.embed_query(row["neg_review"])
 
-            pos_denominator = sum([element**2 for element in pos_emb])
-            pos_emb = [element/pos_denominator for element in pos_emb] ## 이렇게 했을 때, 값이 너무 작아서 0이 될 수도 있으려나?
-            neg_denominator = sum([element**2 for element in neg_emb])
-            neg_emb = [element/neg_denominator for element in neg_emb]
+            # pos_denominator = sum([element**2 for element in pos_emb])
+            # pos_emb = [element/pos_denominator for element in pos_emb] ## 이렇게 했을 때, 값이 너무 작아서 0이 될 수도 있으려나?
+            # neg_denominator = sum([element**2 for element in neg_emb])
+            # neg_emb = [element/neg_denominator for element in neg_emb]
 
             ### weighted dense embedding
             w = row["pos_cnt"]/(row["pos_cnt"]+row["neg_cnt"])
@@ -145,7 +145,7 @@ def main():
         print(f"Result: {insert_count}/{len(entities)-insert_count} (Success/Fail)")
         print(f"It takes.. {cost//60}M {cost%60}S\n")
 
-        client.close()
+    client.close()
 
 if __name__ == "__main__":
     main()
