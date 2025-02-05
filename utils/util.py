@@ -1,9 +1,8 @@
-import requests
+import re
 import json
 import yaml
-import re
 import time
-import os
+import requests
 from dotenv import load_dotenv
 
 from box import Box
