@@ -5,3 +5,7 @@ geopy
 emoji
 requests
 pymysql
+pymilvus
+streamlit
+folium
+streamlit-folium

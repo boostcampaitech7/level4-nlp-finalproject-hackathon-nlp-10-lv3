@@ -6,3 +6,6 @@ data/
 
 # dotenv
 .env
+
+#cache
+__pycache__
