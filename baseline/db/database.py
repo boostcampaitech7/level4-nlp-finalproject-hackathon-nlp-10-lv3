@@ -73,7 +73,7 @@ class SQLiteDatabase:
 
         self.conn.commit()
 
-    def find_nearby_businesses(self, lat, lon, radius=500):
+    def find_nearby_businesses(self, lat, lng, radius=500):
         conn = sqlite3.connect(self.db_path)
         conn.execute("PRAGMA foreign_keys = ON;")
         cur = conn.cursor()
@@ -96,7 +96,7 @@ class SQLiteDatabase:
         """
 
         # SQL 실행 (입력된 값 바인딩)
-        cur.execute(query, (lat, lon, lat, radius))
+        cur.execute(query, (lat, lng, lat, radius))
         results = cur.fetchall()
 
         # 데이터 변환
