@@ -1,6 +1,7 @@
 # Data
 *.csv
 *.db
+*.pyc
 data/
 
 # dotenv
