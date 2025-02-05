@@ -25,7 +25,7 @@ class CompletionExecutor:
             response_text = ""
             try:
                 with requests.post(self._host + '/testapp/v1/chat-completions/HCX-003',
-                                   headers=headers, json=completion_request, stream=True, timeout=30) as r:
+                                    headers=headers, json=completion_request, stream=True, timeout=30) as r:
                     if r.status_code == 200:
                         for line in r.iter_lines():
                             if line:
@@ -141,3 +141,7 @@ def coll_name_mapping(text):
             result += char
     
     return result
+
+def load_json(path):
+    with open(path, "r", encoding="utf-8") as f:
+        output = json.load(f)
