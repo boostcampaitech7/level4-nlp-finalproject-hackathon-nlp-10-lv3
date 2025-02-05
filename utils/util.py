@@ -1,9 +1,12 @@
 import requests
 import json
+import yaml
 import re
 import time
 import os
 from dotenv import load_dotenv
+
+from box import Box
 
 # 환경 변수 로드
 load_dotenv()
@@ -142,6 +145,10 @@ def coll_name_mapping(text):
     
     return result
 
-def load_json(path):
-    with open(path, "r", encoding="utf-8") as f:
-        output = json.load(f)
+def load_config(config_file):
+    # Load Config.yaml
+    with open(config_file) as file:
+        config = yaml.safe_load(file) # Dictionary
+        config = Box(config) # . 
+
+    return config
