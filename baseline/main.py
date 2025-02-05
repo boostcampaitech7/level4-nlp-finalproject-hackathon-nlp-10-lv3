@@ -31,6 +31,15 @@ TMAP_API_KEY = os.getenv("TMAP_API_KEY")
 CLOVA_API_KEY = os.getenv("CLOVA_API_KEY")
 selected = []
 candidates_per_category = {}
+
+#Streamlit basic setting
+st.set_page_config(
+page_title="AI 코스 추천 시스템",
+page_icon="🎯",
+layout="wide",
+initial_sidebar_state="collapsed"
+)
+
 def get_candidate_place(candidate_places, id):
     for place in candidate_places:
         if place["id"] == int(id):
@@ -428,13 +437,7 @@ if __name__ == "__main__":
     tMAP = Tmap_API(API_KEY=TMAP_API_KEY)
     database = SQLiteDatabase("./db/place_Information.db")
 
-    #Streamlit basic setting
-    st.set_page_config(
-    page_title="AI 코스 추천 시스템",
-    page_icon="🎯",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-    )
+
     
     initialize_session_state()
     
