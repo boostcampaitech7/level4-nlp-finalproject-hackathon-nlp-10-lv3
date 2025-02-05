@@ -51,7 +51,7 @@ class Recommend():
    def __init__(self, model):
       self.model=model
    
-   def generate_prompt(current_location, requirements, candidates):
+   def generate_prompt(self, current_location, requirements, candidates):
       user_prompt_template = f"""
       현재 위치: {current_location}  
       요구사항: {requirements}  
@@ -80,12 +80,13 @@ class Recommend():
       ]
       return messages
 
-   def invoke_message(self, user_prompt):
+   def invoke(self, user_prompt):
       messages = self.get_template_message(system_prompt, user_prompt)
-      response = self.model.invoke(messages)
+      response = self.model.invoke_message(messages)
       return response
 
-   def parse_output(text):
+   def parse_output(self, text):
+      
       pattern = r"추천 장소\s*:\s*(.+?)\s*\(id\s*:\s*(\d+)\)\n선택 이유:\n\s*1\. 요구사항 부합:\s*(.+?)\n\s*2\. 접근성:\s*(.+)"
     
       match = re.search(pattern, text, re.DOTALL)

@@ -25,7 +25,7 @@ CLOVA_API_KEY = os.getenv("CLOVA_API_KEY")
 
 def get_candidate_place(candidate_places, id):
     for place in candidate_places:
-        if place["id"] == id:
+        if place["id"] == int(id):
             return {
                 "id": place["id"],
                 "address": place["address"],
@@ -41,11 +41,10 @@ if __name__ == "__main__":
     - 각종 모델이나 모듈 호출
     AI Hybrid Agent는 어떨까?
     """
-
-    chatModel = ClovaXChatModel(API_KEY=CLOVA_API_KEY)
     # naverMAP = NaverMap()
+    chatModel = ClovaXChatModel(API_KEY=CLOVA_API_KEY)
     tMAP = Tmap_API(API_KEY=TMAP_API_KEY)
-    database = SQLiteDatabase()
+    database = SQLiteDatabase("./db/place_Information.db")
     
 
     # TODO: 사용자에게 정보를 입력받기 (in Streamlit)
@@ -55,7 +54,6 @@ if __name__ == "__main__":
 
     """
     
-
     # TODO: 사용자가 입력한 장소에 대한 위, 경도 추출 (call MAP API Module) -> first place init
     """
     1. geopy를 사용해서 입력된 장소에 대한 위,경도를 추출함 -> 사용자가 추천받고싶어하는 위치임
@@ -64,7 +62,7 @@ if __name__ == "__main__":
     
     start_place_latlng = getLatLng(place) # 위 경도 추출
     # sql DB에서 장소 추출 (위경도 기준 반경 500M 추출)
-    candidate_places = SQLiteDatabase.find_nearby_businesses(start_place_latlng[0], start_place_latlng[1])
+    candidate_places = database.find_nearby_businesses(start_place_latlng[0], start_place_latlng[1])
     place_ids = [cand["id"] for cand in candidate_places]
     
     
@@ -113,6 +111,7 @@ if __name__ == "__main__":
     """
     now_place = {"name": place, "lat": start_place_latlng[0], "lng": start_place_latlng[1],} # init
     selected = []
+    candidates_per_category = {}
     for category in choosed_category:
         selected_candidate = []
         for candidate in retrieved_outputs[category[0]]: # 현재 위치와 후보지들간의 거리 구하기
@@ -130,7 +129,6 @@ if __name__ == "__main__":
                 [candidate_place_info["lat"], candidate_place_info["lng"]],
                 now_place["name"],
                 candidate["name"],
-                TMAP_API_KEY
             ) # 각 후보지 당 distance_walking, time
             sel_info = { # 프롬프트에 줄 정보
                 "id": candidate["id"],
@@ -138,34 +136,40 @@ if __name__ == "__main__":
                 "address": candidate_place_info["address"],
                 "text": candidate["text"],
                 "distance": result["distance_walking"],
-                "time": result["time"]
+                "time": result["time"],
+                "rating": candidate_place_info["rating"],
+                "latitude": candidate_place_info["lat"],
+                "longitude": candidate_place_info["lng"]
             }
             selected_candidate.append(sel_info) # 선택된 후보지들과의 거리와 시간 계산한 값들
-
+        candidates_per_category[category[0]] = selected_candidate # 후보지 목록들 추가 (for view)
         # chatX Model을 사용해서 장소 추천
-        rec = Recommend(ClovaXChatModel)
+        rec = Recommend(chatModel)
         recommend_query = rec.generate_prompt(now_place["name"], query, selected_candidate)
-        response_rec = rec.invoke_message(recommend_query)
-        
+        response_rec = rec.invoke(recommend_query)
+    
         # Parsing Response
-        parsing_output = rec.parse_output(response_rec)
+        parsing_output = rec.parse_output(response_rec.content)
         recommend_id = parsing_output["id"]
         recommend_place_info = get_candidate_place(candidate_places, recommend_id)
 
         for candidate in retrieved_outputs[category]:
-            if candidate["id"] == recommend_id:
+            if candidate["id"] == int(recommend_id):
                 recommend_review = candidate["text"]
                 break
         
         # streamlit에 표시할 선택지 저장
-        select_place = {"name":recommend_place_info["name"],
+        select_place = {"name":parsing_output["recommend_place"],
                     "address":recommend_place_info["address"],
                     "rating":recommend_place_info["rating"],
                     "category":category,
-                    "review": recommend_review}
+                    "review": recommend_review,
+                    "latitude":recommend_place_info["lat"],
+                    "longitude":recommend_place_info["lng"]}
         selected.append(select_place)
+
         # now_place 업데이트
-        now_place = {"name":recommend_place_info["name"],
+        now_place = {"name":parsing_output["recommend_place"],
                      "lat": recommend_place_info["lat"],
                      "lng": recommend_place_info["lng"]}
 
@@ -173,24 +177,3 @@ if __name__ == "__main__":
     """
     
     """
-
-    ## Inputs and Paramters (Requirements)
-    query = ""
-    w = 0.5
-    k = 30
-
-
-    ## Retrieval
-    ### Requirements
-    category_course = ["A", "B", "C", "D"]
-    lat = 113.513515
-    log = 68.5645648
-
-    ### Load retrieval module
-    retrieval = Retrieval(query, w, k)
-
-    ### Search
-    retrieved_outputs = {}
-    for category in category_course:
-        outputs = retrieval.search(category, lat, log)
-        retrieved_outputs[category] = outputs
