@@ -144,10 +144,10 @@ def coll_name_mapping(text):
     
     return result
 
-def load_config(config_file):
-    # Load Config.yaml
-    with open(config_file) as file:
-        config = yaml.safe_load(file) # Dictionary
-        config = Box(config) # . 
+def load_yaml(yaml_file):
+    # Load *.yaml
+    with open(yaml_file) as file:
+        yaml = yaml.safe_load(file) # Dictionary
+        yaml = Box(yaml) # . 
 
-    return config
+    return yaml
