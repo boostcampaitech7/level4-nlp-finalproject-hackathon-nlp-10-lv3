@@ -85,6 +85,14 @@ class Category:
             try:
                 # extracted_outputs = match.group(1).split("->")
                 extracted_outputs = outputs.split("->")
+                # 생성된 카테고리가 DB의 카테고리 목록과 일치하는지 확인
+                check = [eo for eo in extracted_outputs if eo in self.big_category_list]
+                if (len(extracted_outputs) >= 1) and (len(check) == len(extracted_outputs)):
+                    # A->B->C 형식을 지키는지 확인
+                    # 각 A, B, C가 DB의 카테고리 목록과 일치하는지 확인
+                    pass
+                else: # 제대로 생성 못함.
+                    extracted_outputs = []
             except:
                 pass
         return extracted_outputs
@@ -146,7 +154,7 @@ class Category:
                                         big_category,
                                         self.small_category_dict[big_category])
             outputs = ""
-            extracted_outputs = ""
+            extracted_outputs = []
             while (not outputs) or (not extracted_outputs):
                 time.sleep(5)
                 messages = self.chatModel.template_message(system_prompt, inputs)
@@ -158,6 +166,11 @@ class Category:
                     # extracted_outputs = match.group(1).split(", ")
                     extracted_outputs = outputs.split(", ")
                     extracted_outputs = [o.split("'")[1] for o in extracted_outputs]
+                    check = [eo for eo in extracted_outputs if eo in self.small_category_dict[big_category]]
+                    if (len(extracted_outputs) >= 1) and (len(check) == len(len(extracted_outputs))):
+                        pass
+                    else:
+                        extracted_outputs = []
                 except:
                     pass
             
