@@ -5,8 +5,6 @@ import time
 import requests
 from dotenv import load_dotenv
 
-from box import Box
-
 # 환경 변수 로드
 load_dotenv()
 
@@ -147,7 +145,6 @@ def coll_name_mapping(text):
 def load_yaml(yaml_file):
     # Load *.yaml
     with open(yaml_file) as file:
-        yaml = yaml.safe_load(file) # Dictionary
-        yaml = Box(yaml) # . 
+        output = yaml.safe_load(file) # Dictionary
 
-    return yaml
+    return output
