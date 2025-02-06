@@ -22,7 +22,7 @@ class Retrieval():
         return
     
     def load_DB(self):
-        URI = os.path.join(".", "db", "course_rcmd.db")
+        URI = os.path.join(".", "db", "course_rcmd_pos.db")
         return MilvusClient(URI)
     
     def close_DB(self):
@@ -67,13 +67,14 @@ class Retrieval():
         return [dense_request, sparse_request]
     
     def search(self, category, place_ids):
+        logger.debug(coll_name_mapping(category))
         res = self.client.hybrid_search(
             collection_name=coll_name_mapping(category),
             reqs=self.requests,
             ranker=self.ranker,
             limit=self.k,
             filter=f'id in {place_ids}',
-            output_fields=["name", "text", "id"]
+            output_fields=["name", "text", "id", "positive_text"]
         )
 
         outputs = [
@@ -82,6 +83,7 @@ class Retrieval():
                 "name": output["entity"]["name"],
                 "score": output["distance"],
                 "text": output["entity"]["text"],
+                "positive_text": output["entity"]["positive_text"],
             } for output in res[0]
         ]
         return outputs

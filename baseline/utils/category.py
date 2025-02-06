@@ -80,7 +80,7 @@ class Category:
             messages = self.chatModel.template_message(system_prompt, inputs)
             outputs = self.chatModel.invoke_message(messages).content
             time.sleep(10)
-            print(outputs)
+            logger.debug(f"Selected Category : {outputs}")
             # match = re.search(fr'{self.escaped_symbol}(.*?){self.escaped_symbol}', outputs)
             try:
                 # extracted_outputs = match.group(1).split("->")
@@ -160,7 +160,6 @@ class Category:
                 messages = self.chatModel.template_message(system_prompt, inputs)
                 outputs = self.chatModel.invoke_message(messages).content
                 time.sleep(10)
-                logger.debug(outputs)
                 # match = re.search(fr'{self.escaped_symbol}(.*?){self.escaped_symbol}', outputs)
                 try:
                     # extracted_outputs = match.group(1).split(", ")
@@ -182,7 +181,13 @@ class Category:
     
     def get_all_category(self, input_dict):
         big_category = self.get_big_category(input_dict) # List[str]
-        logger.debug(f"[DONE] Create Big Category")
-        choosed_category = self.get_small_category(big_category, input_dict) # List[Tuple[str, List[str]]]
-        logger.debug(f"[DONE] Create Small Category")
+        choosed_category = []
+        for category in big_category:
+            if (category == "아침식사") or (category == "점심식사") or (category == "저녁식사"):
+                choosed_category.append([("음식점")])
+            else:
+                choosed_category.append([(category)])
+        logger.debug(f"[DONE] Create Big Category, {choosed_category}")
+        # choosed_category = self.get_small_category(big_category, input_dict) # List[Tuple[str, List[str]]]
+        # logger.debug(f"[DONE] Create Small Category")
         return choosed_category

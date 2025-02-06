@@ -50,7 +50,7 @@ system_prompt = """
 class Recommend():
    def __init__(self, model):
       self.model=model
-   
+      
    def generate_prompt(self, current_location, requirements, candidates):
       user_prompt_template = f"""
       현재 위치: {current_location}  
