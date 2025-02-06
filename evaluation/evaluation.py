@@ -159,7 +159,7 @@ def process_course(x):
 
 if __name__=="__main__":
     # Loading&Processing dataframe
-    df = pd.read_csv(os.path.join("data", "origin_fewshot_1.csv"))
+    df = pd.read_csv(os.path.join("..", "data", "origin_fewshot_1.csv"))
     df["generated_route"] = df["generated_route"].map(process_course)
     df.head()
 
@@ -167,7 +167,7 @@ if __name__=="__main__":
     api_key = os.getenv("OPENAI_API_KEY")
 
     # Loading prompt templates for generating reasoning
-    PROMPT_DIR = os.path.join("prompts", "cate_crs_eval_prmpt.yaml")
+    PROMPT_DIR = os.path.join("..", "prompts", "cate_crs_eval_prmpt.yaml")
     prompts = load_yaml(PROMPT_DIR)
 
     sys_prmpt = prompts["sys_prmpt"]
@@ -183,10 +183,10 @@ if __name__=="__main__":
     ]
 
     # call generation configuration
-    CONFIG_DIR = os.path.join("evaluation", "configs.yaml")
+    CONFIG_DIR = os.path.join("..", "evaluation", "configs.yaml")
     gen_configs = load_yaml(CONFIG_DIR)
 
-    file_path = os.path.join("data", "requests.jsonl")
+    file_path = os.path.join("..", "data", "requests.jsonl")
 
     course_evaluator = CourseEvaulator(api_key=api_key, **gen_configs)
     course_evaluator.save_requests(sys_prmpt, usr_prmpts, file_path)
