@@ -150,7 +150,15 @@ class CourseEvaulator():
         print("**********************************************************************************")
         return evaluated_outputs
     
+def process_course(x):
+    trans_table = str.maketrans({"[": "", "]": "", "'": "", " ": ""})
+    result = x.translate(trans_table)
+    result = result.split(",")
+    return "-".join(result)
+    
+
 if __name__=="__main__":
+    # Loading&Processing dataframe
     df = pd.read_csv(os.path.join("data", "origin_fewshot_1.csv"))
     df.rename(columns={"request": "query", "start_time": "time", "generated_route": "course"}, inplace=True)
     df["course"] = df["course"].map(process_course)
@@ -186,3 +194,5 @@ if __name__=="__main__":
     course_evaluator.evaluate()
 
     results = course_evaluator.get_results()
+    df["evaluation"] = results
+    df.to_csv(os.paht.join("..", "data", "evaluated.csv"), index=False)
