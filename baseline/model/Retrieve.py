@@ -82,6 +82,7 @@ class Retrieval():
                 "name": output["entity"]["name"],
                 "score": output["distance"],
                 "text": output["entity"]["text"],
+                "positive_text": output["entity"]["positive_text"],
             } for output in res[0]
         ]
         return outputs
