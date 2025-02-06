@@ -10,19 +10,19 @@ from utils.util import load_yaml
 
 
 class CourseEvaulator():
-    def __init__( ## default 값 설정
+    def __init__(
             self,
             api_key,
-            model,
-            max_tokens,
-            temperature,
-            top_p,
-            frequency_penalty,
-            presence_penalty,
-            stop,
-            logprobs,
-            top_logprobs,
-            n,
+            model="gpt-4o",
+            max_tokens=512,
+            temperature=0,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0,
+            stop=None,
+            logprobs=True,
+            top_logprobs=10,
+            n=1,
     ):
         self.api_key = api_key
         self.model = model
