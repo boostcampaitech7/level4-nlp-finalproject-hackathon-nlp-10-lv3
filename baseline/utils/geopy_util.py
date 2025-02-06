@@ -1,10 +1,10 @@
 from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
 from loguru import logger
-# TODO: Geopy를 사용해서 장소에 따른 위 경도 구하기
 
 def getLatLng(place):
     """
+    # deprecated
     parameter:
         place: str # 사용자가 입력폼에 입력한 시작지점 위치
     return

@@ -3,7 +3,6 @@ import pandas as pd
 from dotenv import load_dotenv
 
 # geopy util
-from utils.geopy_util import getLatLng
 from model.Retrieve import Retrieval
 from utils.category import Category
 
@@ -12,7 +11,7 @@ from db.database import SQLiteDatabase
 
 # MapAPI
 from mapAPI.TMapAPI import Tmap_API
-
+from mapAPI.NaverSearchAPI import get_lat_lon
 # Model
 from model.ChatModel import ClovaXChatModel
 from model.Retrieve import Retrieval
@@ -45,7 +44,7 @@ if __name__ == "__main__":
     chatModel = ClovaXChatModel(API_KEY=CLOVA_API_KEY)
     tMAP = Tmap_API(API_KEY=TMAP_API_KEY)
     database = SQLiteDatabase("./db/place_Information.db")
-    
+    category_generator = Category(chatModel, "place_info_data_path")
 
     # TODO: 사용자에게 정보를 입력받기 (in Streamlit)
     """
@@ -59,32 +58,27 @@ if __name__ == "__main__":
     1. geopy를 사용해서 입력된 장소에 대한 위,경도를 추출함 -> 사용자가 추천받고싶어하는 위치임
     2. 해당 위치를 기반으로 반경 500M의 place 제한함
     """
-    
-    start_place_latlng = getLatLng(place) # 위 경도 추출
+    start_place_latlng = get_lat_lon(place) # 위 경도 추출
     # sql DB에서 장소 추출 (위경도 기준 반경 500M 추출)
-    candidate_places = database.find_nearby_businesses(start_place_latlng[0], start_place_latlng[1])
+    candidate_places = database.find_nearby_businesses(start_place_latlng[1], start_place_latlng[0])
     place_ids = [cand["id"] for cand in candidate_places]
     
     
     # TODO: 시간과 요구사항에 맞는 "카테고리 기반 코스 추천" (call ChatModel)
     """
     ChatModel을 사용해서 카테고리 기반 코스를 추출하는 코드
-    """
     input_dict = {
         'request' : query,
         'age' : '',
         'sex' : '',
         'start_time' : ''
-    } # 이거는 윗단에서 어떻게 처리할지 몰라 딕셔너리 형태로 설정
-    category_generator = Category(chatModel, "place_info_data_path")
-    big_category = category_generator.get_big_category(input_dict) # List[str]
-    choosed_category = category_generator.get_small_category(big_category, input_dict) # List[Tuple[str, List[str]]]
-
-    #[(big category), (small category)]
+    }
+    """
+    choosed_category = category_generator.get_all_category(input_dict) # 카테고리 순서 얻는 함수
     #[("대분류1", ["소분류1"]), ("대분류2", ["소분류2"])]
     
     # TODO: 카테고리에 맞는 후보지 추출 (call Retrieve Module)
-    """
+    """# 
     Retreieve 모듈로 선택된 카테고리들에 대한 후보지들을 불러오기
     -> dictionary로 각 카테고리 별로 후보지들이 들어가도록 만들어주기
     """

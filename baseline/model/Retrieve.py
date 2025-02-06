@@ -21,7 +21,7 @@ class Retrieval():
         return
     
     def load_DB(self):
-        URI = os.path.join("..", "db", "dense_recommendation.db")
+        URI = os.path.join("..", "db", "course_rcmd.db")
         return MilvusClient(URI)
     
     def close_DB(self):
