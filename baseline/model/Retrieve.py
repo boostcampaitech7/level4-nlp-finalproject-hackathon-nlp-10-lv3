@@ -73,7 +73,7 @@ class Retrieval():
             ranker=self.ranker,
             limit=self.k,
             filter=f'id in {place_ids}',
-            output_fields=["name", "text", "id"]
+            output_fields=["name", "text", "id", "positive_text"]
         )
 
         outputs = [
