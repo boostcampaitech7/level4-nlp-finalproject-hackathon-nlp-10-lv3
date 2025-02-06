@@ -160,8 +160,7 @@ def process_course(x):
 if __name__=="__main__":
     # Loading&Processing dataframe
     df = pd.read_csv(os.path.join("data", "origin_fewshot_1.csv"))
-    df.rename(columns={"request": "query", "start_time": "time", "generated_route": "course"}, inplace=True)
-    df["course"] = df["course"].map(process_course)
+    df["generated_route"] = df["generated_route"].map(process_course)
     df.head()
 
     # Loading environmental variable - Clova Studio API key

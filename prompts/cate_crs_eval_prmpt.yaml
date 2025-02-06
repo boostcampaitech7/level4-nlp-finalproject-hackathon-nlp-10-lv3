@@ -137,12 +137,13 @@ usr_prmpt_template: >
     ****사용자 정보****
     나이: {age}
     성별: {gender}
+    요구사항: {request}
     
     ****시간 정보****
-    일정 시작: {time}
-    일정 끝: 22:00
+    일정 시작: {start_time}
+    일정 끝: 22시시
 
     ****경로 정보****
-    경로: {course}
+    경로: {generated_route}
 
     ****평가 결과****
