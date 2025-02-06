@@ -1,9 +1,9 @@
 import os
 import pickle
-
 from pymilvus import MilvusClient, AnnSearchRequest, WeightedRanker
 from langchain_community.embeddings import ClovaXEmbeddings
-from utils import coll_name_mapping
+from utils.coll_name_mapping import coll_name_mapping
+from loguru import logger
 
 class Retrieval():
     def __init__(
@@ -11,27 +11,28 @@ class Retrieval():
             query,
             w,
             k,
+            api_key
     ):
         self.w = w
         self.k = k
-        
+        self.api_key = api_key
         self.client = self.load_DB()
         self.ranker = WeightedRanker(w, 1-w)
         self.requests = self.make_request(query)
         return
     
     def load_DB(self):
-        URI = os.path.join("..", "db", "course_rcmd.db")
+        URI = os.path.join(".", "db", "course_rcmd.db")
         return MilvusClient(URI)
     
     def close_DB(self):
         self.client.close()
             
     def call_dense(self):
-        return ClovaXEmbeddings(model="clir-emb-dolphin")
+        return ClovaXEmbeddings(model="clir-emb-dolphin", api_key=self.api_key)
     
     def call_sparse(self):
-        EMBEDDING_PATH = os.path.join("..", "model", "sparse_embedding.pkl")
+        EMBEDDING_PATH = os.path.join(".", "model", "sparse_embedding.pkl")
         with open(EMBEDDING_PATH, 'rb') as f:
             sparse_embedding = pickle.load(f)
         return sparse_embedding
@@ -66,8 +67,8 @@ class Retrieval():
         return [dense_request, sparse_request]
     
     def search(self, category, place_ids):
-        res = self.client.hybrid_serach(
-            collection_name=coll_name_mapping[category],
+        res = self.client.hybrid_search(
+            collection_name=coll_name_mapping(category),
             reqs=self.requests,
             ranker=self.ranker,
             limit=self.k,
@@ -78,7 +79,7 @@ class Retrieval():
         outputs = [
             {
                 "id": output["id"],
-                "name": output["name"],
+                "name": output["entity"]["name"],
                 "score": output["distance"],
                 "text": output["entity"]["text"],
             } for output in res[0]

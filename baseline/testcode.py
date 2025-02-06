@@ -49,22 +49,23 @@ input_dict = {
 
 logger.debug(f'요구사항 : {input_dict["request"]}, {input_dict["age"]}, {input_dict["sex"]}, {input_dict["start_time"]}')
 
-choosed_category = category_generator.get_all_category(input_dict)
-print(choosed_category)
+# choosed_category = category_generator.get_all_category(input_dict)
+choosed_category = [("음식점",[]),("시장",[]),("카페",[]),("공원",[])]
 
-# ## Inputs and Paramters (Requirements)
-# query = ""
-# w = 0.5
-# k = 30
+## Inputs and Paramters (Requirements)
+query = input_dict["request"]
+w = 0.5
+k = 30
 
-# ## Retrieval
-# ### Load retrieval module
-# retrieval = Retrieval(query, w, k)
+## Retrieval
+### Load retrieval module
+retrieval = Retrieval(query, w, k, CLOVA_API_KEY)
 
-# ### Search
-# retrieved_outputs = {}
-# for category in choosed_category:
-#     outputs = retrieval.search(category[0], place_ids) ## candidate_place의 output에서 id만 뽑아서 place_ids로 활용
-#     retrieved_outputs[category[0]] = outputs
-# retrieval.close_DB()
+### Search
+retrieved_outputs = {}
+for category in choosed_category:
+    outputs = retrieval.search(category[0], place_ids) ## candidate_place의 output에서 id만 뽑아서 place_ids로 활용
+    retrieved_outputs[category[0]] = outputs
 
+pprint(retrieved_outputs)
+retrieval.close_DB()
