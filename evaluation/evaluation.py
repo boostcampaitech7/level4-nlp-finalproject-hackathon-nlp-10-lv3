@@ -139,19 +139,23 @@ class CourseEvaulator():
 
     def get_results(self):
         raw_results = self.get_raw_results()
-        evaluated_outputs = [
-            int(
-                re.search(
-                    r"\$\$\$\$\d+\$\$\$\$",
-                    result
-                ).group().replace("$", "")
-            ) for result in raw_results
-        ]
-        suitability = sum(evaluated_outputs)/len(evaluated_outputs)
+        evaluated_outputs = []
+        parsing_failed = []
+        for result in raw_results:
+            evaluated_output = re.search(r"\$\$\$\$\d+\$\$\$\$", result)
+            if evaluated_output == None:
+                evaluated_outputs.append(None)
+                parsing_failed.append(result)
+            else:
+                evaluated_outputs.append(evaluated_output.group().replace("$", ""))  
+
+        tot_sum = sum(filter(None, evaluated_outputs))
+        tot_len = len(list(filter(None, evaluated_outputs)))
+        suitability = tot_sum/tot_len
         print("\n**********************************************************************************")
         print(f"The Suitability Score: {suitability}")
         print("**********************************************************************************")
-        return evaluated_outputs, raw_results
+        return evaluated_outputs, raw_results, parsing_failed
     
 def process_course(x):
     trans_table = str.maketrans({"[": "", "]": "", "'": "", " ": ""})
@@ -195,6 +199,14 @@ if __name__=="__main__":
     course_evaluator.save_requests(sys_prmpt, usr_prmpts, file_path)
     course_evaluator.evaluate()
 
-    results, raw_results = course_evaluator.get_results()
+    results, raw_results, parsing_failed = course_evaluator.get_results()
     df["evaluation"] = results
     df.to_csv(os.paht.join("..", "data", "evaluated.csv"), index=False)
+
+    with open(os.path.join("..", "db", "evaluation", 'raw_results.txt'), 'w') as f:
+        for item in raw_results:
+            f.write(str(item) + '\n')
+
+    with open(os.path.join("..", "db", "evaluation", 'parsing_failed.txt'), 'w') as f:
+        for item in parsing_failed:
+            f.write(str(item) + '\n')
