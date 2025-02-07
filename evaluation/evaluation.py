@@ -166,7 +166,7 @@ def process_course(x):
 
 if __name__=="__main__":
     # Loading&Processing dataframe
-    df = pd.read_csv(os.path.join("..", "data", "origin_fewshot_1.csv"))
+    df = pd.read_csv(os.path.join("..", "db", "origin_fewshot_1.csv"))
     df["generated_route"] = df["generated_route"].map(process_course)
     df.head()
 
@@ -193,7 +193,7 @@ if __name__=="__main__":
     CONFIG_DIR = os.path.join("..", "evaluation", "configs.yaml")
     gen_configs = load_yaml(CONFIG_DIR)
 
-    file_path = os.path.join("..", "data", "requests.jsonl")
+    file_path = os.path.join("..", "db", "requests.jsonl")
 
     course_evaluator = CourseEvaulator(api_key=api_key, **gen_configs)
     course_evaluator.save_requests(sys_prmpt, usr_prmpts, file_path)
@@ -201,7 +201,7 @@ if __name__=="__main__":
 
     results, raw_results, parsing_failed = course_evaluator.get_results()
     df["evaluation"] = results
-    df.to_csv(os.paht.join("..", "data", "evaluated.csv"), index=False)
+    df.to_csv(os.paht.join("..", "db", "evaluated.csv"), index=False)
 
     with open(os.path.join("..", "db", "evaluation", 'raw_results.txt'), 'w') as f:
         for item in raw_results:
