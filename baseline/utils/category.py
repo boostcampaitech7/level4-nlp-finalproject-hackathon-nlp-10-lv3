@@ -78,11 +78,11 @@ class Category:
         while (not outputs) or (not extracted_outputs):
             time.sleep(5)
             messages = self.chatModel.template_message(system_prompt, inputs)
-            outputs = self.chatModel.invoke_message(messages).content
-            time.sleep(10)
-            logger.debug(f"Selected Category : {outputs}")
             # match = re.search(fr'{self.escaped_symbol}(.*?){self.escaped_symbol}', outputs)
             try:
+                outputs = self.chatModel.invoke_message(messages).content
+                time.sleep(10)
+                logger.debug(f"Selected Category : {outputs}")
                 # extracted_outputs = match.group(1).split("->")
                 extracted_outputs = outputs.split("->")
                 # 생성된 카테고리가 DB의 카테고리 목록과 일치하는지 확인

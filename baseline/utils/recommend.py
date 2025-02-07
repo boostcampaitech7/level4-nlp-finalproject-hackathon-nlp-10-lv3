@@ -1,4 +1,7 @@
 import re
+import time
+from loguru import logger
+
 system_prompt = """
 당신은 사용자의 요구사항과 후보 장소 정보를 분석해 최적의 장소를 추천하는 전문가입니다.  
 다음 규칙과 예시를 참고하여 장소를 선택하고 이유를 설명하세요:
@@ -57,12 +60,14 @@ class Recommend():
       요구사항: {requirements}  
       후보 장소:
       """
-      for i, candidate in enumerate(candidates, start=1):
+      for i, candidate in enumerate(candidates):
+         if i > 5:
+            break
          user_prompt_template += f"""
          {i}. {candidate['name']} (id : {candidate["id"]})  
          - 소요시간: {candidate['time']}  
          - 거리: {candidate['distance']}  
-         - 리뷰: {candidate['text']}  
+         - 리뷰: {candidate['description']}  
       """
       user_prompt_template += "\n추천할 장소를 선택하고 이유를 설명해 주세요."
       return user_prompt_template
@@ -82,7 +87,23 @@ class Recommend():
 
    def invoke(self, user_prompt):
       messages = self.get_template_message(system_prompt, user_prompt)
-      response = self.model.invoke_message(messages)
+      time.sleep(5)
+      retry_count = 0
+      max_retries = 5
+      while retry_count < max_retries:
+        try:
+            response = self.model.invoke_message(messages)
+            logger.debug(f"selected : {response}")
+            break
+        except Exception as e:
+            logger.error(f"Raise Exception, Retry {retry_count+1}, {e}")
+            if "42901" in str(e):
+               logger.error("42901 Error")
+               delay = 3 * (2 ** retry_count)  # 지수적으로 증가
+               time.sleep(delay)
+               retry_count += 1
+            else:
+               raise e
       return response
 
    def parse_output(self, text):
@@ -99,3 +120,4 @@ class Recommend():
             "access": match.group(4).strip()
          }
       return None
+   

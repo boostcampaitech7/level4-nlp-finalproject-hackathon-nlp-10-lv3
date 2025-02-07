@@ -2,7 +2,7 @@ import os
 from langchain_community.chat_models import ChatClovaX
 
 class ClovaXChatModel():
-    def __init__(self, model_name="HCX-003", top_p=0.8, temp=0.5, max_tokens=1024, repeat_penalty=5, API_KEY=""):
+    def __init__(self, model_name="HCX-003", top_p=0.8, temp=0.5, max_tokens=4096, repeat_penalty=5, API_KEY=""):
         self.model_name = model_name
         self.top_p = top_p
         self.temp = temp
