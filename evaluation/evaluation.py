@@ -106,7 +106,6 @@ class CourseEvaulator():
 
             evaluated_output = re.search(r"\$\$\$\$\d+\$\$\$\$", raw_result)
             if evaluated_output == None:
-                evaluated_outputs.append(None)
                 parsing_failed.append(raw_result)
             else:
                 evaluated_outputs.append(int(evaluated_output.group().replace("$", "")))
@@ -180,7 +179,7 @@ class CourseEvaulator():
         )
         return True
     
-    def evaluate(self):
+    def batch_evaluate(self):
         fail_cnt = 0
         if not self.create_batch():
             return
@@ -223,14 +222,14 @@ class CourseEvaulator():
                 print("The process is canceled")
                 break
 
-    def get_raw_results(self):
+    def get_raw_results_batch(self):
         result_file_id = self.client.batches.retrieve(self.batch_job.id).output_file_id
         results = self.client.files.content(result_file_id).content.decode('utf-8')
         return [json.loads(line)["response"]["body"]["choices"][0]["message"]["content"]
                 for line in results.split('\n') if line]
 
-    def get_results(self):
-        raw_results = self.get_raw_results()
+    def get_results_batch(self):
+        raw_results = self.get_raw_results_batch()
         evaluated_outputs = []
         parsing_failed = []
         for result in raw_results:
