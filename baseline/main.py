@@ -89,12 +89,12 @@ if __name__ == "__main__":
 
     ## Retrieval
     ### Load retrieval module
-    retrieval = Retrieval(query, w, k)
+    retrieval = Retrieval(query, w, k, place_ids)
 
     ### Search
     retrieved_outputs = {}
     for category in choosed_category:
-        outputs = retrieval.search(category[0], place_ids) ## candidate_place의 output에서 id만 뽑아서 place_ids로 활용
+        outputs = retrieval.search(category[0]) ## candidate_place의 output에서 id만 뽑아서 place_ids로 활용
         retrieved_outputs[category[0]] = outputs
     retrieval.close_DB()
     
