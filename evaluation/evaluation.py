@@ -314,7 +314,7 @@ if __name__=="__main__":
     print(f"Cost: {cost:4f}$")
     print("**********************************************************************************")
 
-    df.to_csv(os.paht.join("..", "db", "evaluation", "evaluated.csv"), index=False)
+    df.to_csv(os.path.join("..", "db", "evaluation", "evaluated.csv"), index=False)
 
     with open(os.path.join("..", "db", "evaluation", 'raw_results.txt'), 'w') as f:
         for item in results["raw_results"]:
