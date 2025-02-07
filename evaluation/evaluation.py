@@ -2,6 +2,7 @@ import os
 import re
 import json
 import time
+from tqdm import tqdm
 
 import pandas as pd
 from openai import OpenAI
@@ -35,6 +36,63 @@ class CourseEvaulator():
         self.logprobs = logprobs
         self.top_logprobs = top_logprobs
         self.n = n
+        
+        self.client = OpenAI(api_key=self.api_key)
+    
+    def create_completion(self, sys_prmpt, usr_prmpt):
+        return self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": sys_prmpt},
+                {"role": "user", "content": usr_prmpt},
+            ],
+            max_tokens = self.max_tokens,
+            temperature = self.temperature,
+            top_p = self.top_p,
+            frequency_penalty = self.frequency_penalty,
+            presence_penalty = self.presence_penalty,
+            stop = self.stop,
+            logprobs = self.logprobs,
+            top_logprobs = self.top_logprobs,
+            n = self.n,
+        )
+    
+    def evaluate(self, sys_prmpt, usr_prmpts):
+        raw_results = []
+        evaluated_outputs = []
+        parsing_failed = []
+        used_tokens = {
+            "cached_prompt_tokens": 0,
+            "uncached_prompt_tokens": 0,
+            "completion_tokens": 0,
+        }
+        for usr_prmpt in tqdm(usr_prmpts):
+            completion = self.create_completion(sys_prmpt, usr_prmpt)
+            raw_result = completion.choices[0].message.content
+            raw_results.append(raw_result)
+
+            evaluated_output = re.search(r"\$\$\$\$\d+\$\$\$\$", raw_result)
+            if evaluated_output == None:
+                evaluated_outputs.append(None)
+                parsing_failed.append(raw_result)
+            else:
+                evaluated_outputs.append(int(evaluated_output.group().replace("$", "")))
+                time.sleep(5)
+            
+            usage = completion.usage
+            cached_prompt_tokens = usage.prompt_tokens_details.cached_tokens
+            uncached_prompt_tokens = usage.prompt_tokens - cached_prompt_tokens
+            completion_tokens = usage.completion_tokens
+            used_tokens["cached_prompt_tokens"] += cached_prompt_tokens
+            used_tokens["uncached_prompt_tokens"] += uncached_prompt_tokens
+            used_tokens["completion_tokens"] += completion_tokens
+
+        return {
+            "raw_results": raw_results,
+            "evaluated_outputs": evaluated_outputs,
+            "parsing_failed": parsing_failed,
+            "used_tokens": used_tokens,
+        }
 
     def make_request(self, id, sys_prmpt, usr_prmpt):
         return {
@@ -77,7 +135,6 @@ class CourseEvaulator():
             print("You need to do '.save_requests()' first.")
             return False
 
-        self.client = OpenAI(api_key=self.api_key)
         batch_input_file = self.client.files.create(
             file=open(self.file_path, "rb"),
             purpose="batch"
@@ -206,12 +263,21 @@ if __name__=="__main__":
     failure_len = len(results["parsing_failed"])
     suitability = tot_sum/tot_len
     failure_ratio = failure_len/tot_len
+
+    cached_prompt_tokens = results["used_tokens"]["cached_prompt_tokens"]
+    uncached_prompt_tokens = results["used_tokens"]["uncached_prompt_tokens"]
+    completion_tokens = results["used_tokens"]["completion_tokens"]
     print("\n**********************************************************************************")
+    print("***Results***")
     print(f"The Suitability Score: {suitability}")
     print(f"The Failure Ratio: {failure_ratio}\n")
+    print("***Token Usage***")
+    print(f"Uncached Input Tokens: {uncached_prompt_tokens}")
+    print(f"Cached Input Tokens: {cached_prompt_tokens}")
+    print(f"Output Tokens: {completion_tokens}")
     print("**********************************************************************************")
 
-    df.to_csv(os.paht.join("..", "db", "evaluated.csv"), index=False)
+    df.to_csv(os.paht.join("..", "db", "evaluation", "evaluated.csv"), index=False)
 
     with open(os.path.join("..", "db", "evaluation", 'raw_results.txt'), 'w') as f:
         for item in raw_results:
