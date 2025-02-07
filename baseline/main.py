@@ -132,12 +132,12 @@ def searching_engine(input_dict, place) -> None :
 
     ## Retrieval
     ### Load retrieval module
-    retrieval = Retrieval(input_dict["request"], w, k, CLOVA_API_KEY)
+    retrieval = Retrieval(input_dict["request"], w, k, place_ids, CLOVA_API_KEY)
 
     ### Search
     retrieved_outputs = {}
     for category in choosed_category:
-        outputs = retrieval.search(category[0], place_ids) ## candidate_place의 output에서 id만 뽑아서 place_ids로 활용
+        outputs = retrieval.search(category[0]) ## candidate_place의 output에서 id만 뽑아서 place_ids로 활용
         retrieved_outputs[category[0]] = outputs
     retrieval.close_DB()
 

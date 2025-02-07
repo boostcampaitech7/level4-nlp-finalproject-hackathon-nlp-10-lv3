@@ -11,6 +11,7 @@ class Retrieval():
             query,
             w,
             k,
+            place_ids,
             api_key
     ):
         self.w = w
@@ -18,7 +19,7 @@ class Retrieval():
         self.api_key = api_key
         self.client = self.load_DB()
         self.ranker = WeightedRanker(w, 1-w)
-        self.requests = self.make_request(query)
+        self.requests = self.make_request(query, place_ids)
         return
     
     def load_DB(self):
@@ -37,7 +38,7 @@ class Retrieval():
             sparse_embedding = pickle.load(f)
         return sparse_embedding
     
-    def make_request(self, query):
+    def make_request(self, query, place_ids):
         dense_embedding = self.call_dense()
         sparse_embedding = self.call_sparse()
         dense_vector = dense_embedding.embed_query(query)
@@ -50,7 +51,8 @@ class Retrieval():
                 "metric_type": "IP",
                 "params": {}
             },
-            "limit": self.k
+            "limit": self.k,
+            "expr": f'id in {place_ids}'
         }
         sparse_search_params = {
             "data": [sparse_vector],
@@ -59,21 +61,21 @@ class Retrieval():
                 "metric_type": "IP",
                 "params": {}
             },
-            "limit": self.k
+            "limit": self.k,
+            "expr": f'id in {place_ids}'
         }
 
         dense_request = AnnSearchRequest(**dense_search_params)
         sparse_request = AnnSearchRequest(**sparse_search_params)
         return [dense_request, sparse_request]
     
-    def search(self, category, place_ids):
+    def search(self, category):
         logger.debug(coll_name_mapping(category))
         res = self.client.hybrid_search(
             collection_name=coll_name_mapping(category),
             reqs=self.requests,
             ranker=self.ranker,
             limit=self.k,
-            filter=f'id in {place_ids}',
             output_fields=["name", "text", "id", "positive_text"]
         )
 

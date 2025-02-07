@@ -188,6 +188,6 @@ class Category:
             else:
                 choosed_category.append([(category)])
         logger.debug(f"[DONE] Create Big Category, {choosed_category}")
-        # choosed_category = self.get_small_category(big_category, input_dict) # List[Tuple[str, List[str]]]
+        # choosed_category = self.get_small_category(big_category, input_dict) # List[Tuple[str, List[str]]] # 현재 사용하지 않아서 deprecated 됨
         # logger.debug(f"[DONE] Create Small Category")
         return choosed_category
