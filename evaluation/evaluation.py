@@ -224,7 +224,12 @@ if __name__=="__main__":
     # Loading&Processing dataframe
     df = pd.read_csv(os.path.join("..", "db", "origin_fewshot_1.csv"))
     df["generated_route"] = df["generated_route"].map(process_course)
-    df.head()
+    
+    data_size = df.shape[0]
+    idx_1 = df["generated_route"]=="0"
+    idx_2 = df["generated_route"]== 0
+    cnt_0 = sum(idx_1 | idx_2)
+    print(f"Count for zero: {cnt_0}/{data_size}\n")
 
     # Loading environmental variable - Clova Studio API key
     api_key = os.getenv("OPENAI_API_KEY")
@@ -239,9 +244,9 @@ if __name__=="__main__":
         usr_prmpt_template.format(
             age=row.age,
             gender=row.gender,
-            query=row.query,
-            time=row.time,
-            course=row.course,
+            request=row.request,
+            start_time=row.start_time,
+            generated_route=row.generated_route,
         ) for _, row in df.iterrows()
     ]
 
@@ -252,11 +257,8 @@ if __name__=="__main__":
     file_path = os.path.join("..", "db", "requests.jsonl")
 
     course_evaluator = CourseEvaulator(api_key=api_key, **gen_configs)
-    course_evaluator.save_requests(sys_prmpt, usr_prmpts, file_path)
-    course_evaluator.evaluate()
-
-    results, raw_results, parsing_failed = course_evaluator.get_results()
-    df["evaluation"] = results
+    results = course_evaluator.evaluate(sys_prmpt, usr_prmpts)
+    df["evaluation"] = results["evaluated_outputs"]
 
     tot_sum = sum(filter(None, results["evaluated_outputs"]))
     tot_len = len(list(filter(None, results["evaluated_outputs"])))
@@ -280,9 +282,9 @@ if __name__=="__main__":
     df.to_csv(os.paht.join("..", "db", "evaluation", "evaluated.csv"), index=False)
 
     with open(os.path.join("..", "db", "evaluation", 'raw_results.txt'), 'w') as f:
-        for item in raw_results:
+        for item in results["raw_results"]:
             f.write(str(item) + '\n')
 
     with open(os.path.join("..", "db", "evaluation", 'parsing_failed.txt'), 'w') as f:
-        for item in parsing_failed:
+        for item in results["parsing_failed"]:
             f.write(str(item) + '\n')
