@@ -5,6 +5,7 @@ import time
 from tqdm import tqdm
 
 import pandas as pd
+import openai
 from openai import OpenAI
 
 from utils.util import load_yaml
@@ -61,13 +62,45 @@ class CourseEvaulator():
         raw_results = []
         evaluated_outputs = []
         parsing_failed = []
+        failure_index = []
         used_tokens = {
             "cached_prompt_tokens": 0,
             "uncached_prompt_tokens": 0,
             "completion_tokens": 0,
         }
-        for usr_prmpt in tqdm(usr_prmpts):
-            completion = self.create_completion(sys_prmpt, usr_prmpt)
+        for i, usr_prmpt in tqdm(
+            enumerate(usr_prmpts),
+            desc="API calling",
+            unit="request",
+            total=len(usr_prmpts),
+        ):
+            fail_cnt = 0
+            while fail_cnt<=5:
+                try:
+                    completion = self.create_completion(sys_prmpt, usr_prmpt)
+                    break
+                except openai.APIError as e:
+                    fail_cnt +=1
+                    print(f"Fail-{fail_cnt}")
+                    print(f"OpenAI API returned an API Error: {e}")
+                except openai.APIConnectionError as e:
+                    fail_cnt +=1
+                    print(f"Fail-{fail_cnt}")
+                    print(f"Failed to connect to OpenAI API: {e}")
+                except openai.RateLimitError as e:
+                    fail_cnt = 6
+                    print(f"OpenAI API request exceeded rate limit: {e}")
+                    break
+                except Exception as e:
+                    fail_cnt +=1
+                    print(f"Fail-{fail_cnt}")
+                    print(f"An unexpected error occurred: {e}")
+
+            if fail_cnt==6:
+                raw_results.append("Fail")
+                failure_index.append(i)
+                continue
+
             raw_result = completion.choices[0].message.content
             raw_results.append(raw_result)
 
@@ -91,6 +124,7 @@ class CourseEvaulator():
             "raw_results": raw_results,
             "evaluated_outputs": evaluated_outputs,
             "parsing_failed": parsing_failed,
+            "failure_index": failure_index,
             "used_tokens": used_tokens,
         }
 
