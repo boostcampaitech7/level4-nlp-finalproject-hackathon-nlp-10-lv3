@@ -270,8 +270,35 @@ def show_details() -> None:
                 'sex' : gender,
                 'start_time' : selected_datetime   
             }
-            place = place_sel
+            st.session_state.input_dict = input_dict
+            st.session_state.place = place_sel
+            st.session_state.step = "loading"
+            st.rerun()
+
+
+def show_loading() -> None:
+    """로딩 화면 표시"""
+    st.empty()
+    st.empty()
+    st.title("AI 코스 추천 시스템")
+    
+    st.markdown(
+        """
+        <div style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
+            🤖 AI가 최적의 코스를 찾고 있습니다...
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    with st.spinner("잠시만 기다려 주세요..."):
+        # searching_engine 함수 실행
+        input_dict = st.session_state.get('input_dict')
+        place = st.session_state.get('place')
+
+        if input_dict and place:
             searching_engine(input_dict, place)
+            # 검색이 완료되면 결과 페이지로 이동
             st.session_state.step = "result"
             st.rerun()
 
@@ -435,6 +462,8 @@ if __name__ == "__main__":
         show_init()
     elif current_step == "details":
         show_details()
+    elif current_step == "loading": 
+        show_loading()
     elif current_step == "result":
         show_result()
     
