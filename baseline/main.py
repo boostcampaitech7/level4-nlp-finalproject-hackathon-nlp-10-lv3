@@ -157,12 +157,12 @@ def searching_engine(input_dict, place) -> None :
                 print("Count 5, break")
                 break
             candidate_place_info = get_candidate_place(candidate_places, candidate["id"]) # 후보지 장소 정보
-            result = tMAP.get_direction_bet_coords_Tmap(
+            result = tMAP.get_direction_bet_coords_Tmap( # 각 후보지 당 distance_walking, time을 구함
                 [now_place["lng"], now_place["lat"]],
                 [candidate_place_info["lng"], candidate_place_info["lat"]],
                 now_place["name"],
                 candidate["name"],
-            ) # 각 후보지 당 distance_walking, time
+            ) 
             sel_info = { # 프롬프트에 줄 정보
                 "id": candidate["id"],
                 "name": candidate["name"],
@@ -179,10 +179,10 @@ def searching_engine(input_dict, place) -> None :
         # chatX Model을 사용해서 장소 추천
         recommend_query = rec.generate_prompt(now_place["name"], input_dict["request"], selected_candidate)
         response_rec = rec.invoke(recommend_query)
-    
         # Parsing Response
         parsing_output = rec.parse_output(response_rec.content)
-        recommend_id = parsing_output["id"]
+        logger.debug(f'{parsing_output}')
+        recommend_id = parsing_output["id"] # id를 가져와서 선택한 후보지 정보 가져옴
         recommend_place_info = get_candidate_place(candidate_places, recommend_id)
 
         for retrieve_candidate in retrieved_outputs[category[0]]:
@@ -312,6 +312,7 @@ def get_alternative_locations(location_type: str) -> List[Dict]:
 
 def create_course_map(locations: list) -> folium.Map:
     """코스 위치들을 표시하는 지도 생성"""
+    logger.debug(locations)
     center_lat = locations[0]['lat']
     center_lon = locations[0]['lon']
     

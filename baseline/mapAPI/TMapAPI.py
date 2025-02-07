@@ -35,10 +35,10 @@ class Tmap_API:
                 "startName": startName,
                 "endName": endName
             }
-            logger.debug(f"Tmap Payload {payload}")
+            # logger.debug(f"Tmap Payload {payload}")
             response = requests.post(url, json=payload, headers=headers)
             data = response.json()
-            logger.debug(f"Tmap Response : {data}")
+            # logger.debug(f"Tmap Response : {data}")
             total_distance_of_walking = data["features"][0]["properties"]["totalDistance"]
             total_time = data["features"][0]["properties"]["totalTime"]
             if response.status_code == 200:
