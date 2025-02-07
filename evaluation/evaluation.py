@@ -203,9 +203,12 @@ if __name__=="__main__":
 
     tot_sum = sum(filter(None, results["evaluated_outputs"]))
     tot_len = len(list(filter(None, results["evaluated_outputs"])))
+    failure_len = len(results["parsing_failed"])
     suitability = tot_sum/tot_len
+    failure_ratio = failure_len/tot_len
     print("\n**********************************************************************************")
     print(f"The Suitability Score: {suitability}")
+    print(f"The Failure Ratio: {failure_ratio}\n")
     print("**********************************************************************************")
 
     df.to_csv(os.paht.join("..", "db", "evaluated.csv"), index=False)
