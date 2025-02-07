@@ -67,15 +67,19 @@ def initialize_session_state() -> None:
         st.session_state.alternative_locations = {}
 
 def show_init() -> None:
+    """초기화면 표시"""
     st.title("AI 코스 추천 시스템")
+
+    # 텍스트 입력
     st.text_input(
         label="검색어를 입력하세요",
-        key="temp_input",
+        key="search_input",
+        on_change=on_search_submit,
         placeholder="ex) 레트로한 스타일의 코스를 추천해줘",
         help="Enter 키를 누르면 다음 단계로 넘어갑니다"
     )
 
-    # 예제 쿼리 버튼
+    # 예제 쿼리 표시
     with st.expander("추천 검색어 예시", expanded=True):
         example_queries = [
             "데이트 코스 추천해줘",
@@ -83,15 +87,21 @@ def show_init() -> None:
         ]
         for query in example_queries:
             if st.button(query, key=f"example_{query}"):
-                st.session_state["search_input"] = query  
-                on_search_submit() # 검색 실행
+                st.session_state.temp_query = query
+                on_search_submit()
 
 def on_search_submit() -> None:
     """검색어 제출 처리"""
-    if not st.session_state["search_input"]:
+    
+    if hasattr(st.session_state, 'temp_query') and st.session_state.temp_query.strip() : 
+        st.session_state.user_query = st.session_state.temp_query
+        st.session_state.search_history.append(st.session_state.temp_query)
+    elif hasattr(st.session_state, 'search_input') :
+        st.session_state.user_query = st.session_state.search_input
+        st.session_state.search_history.append(st.session_state.search_input)
+    else:
         st.warning("검색어를 입력해주세요.")
         return
-    st.session_state.search_history.append(st.session_state["search_input"])
     st.session_state.step = "details"
     st.rerun()
 
