@@ -262,6 +262,7 @@ if __name__=="__main__":
     idx_1 = df["generated_route"]=="0"
     idx_2 = df["generated_route"]== 0
     cnt_0 = sum(idx_1 | idx_2)
+    df = df[~(idx_1 | idx_2)]
     print(f"Count for zero: {cnt_0}/{data_size}\n")
 
     # Loading environmental variable - Clova Studio API key
