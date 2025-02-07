@@ -116,6 +116,7 @@ class CourseEvaulator():
                 print("Request is successfully done")
                 break
             elif status == "failed":
+                fail_cnt += 1
                 print(f"The API calling is failed {fail_cnt}-times")
                 if fail_cnt > 5:
                     print("[STOP] More than 5 failure.")
@@ -147,7 +148,7 @@ class CourseEvaulator():
                 evaluated_outputs.append(None)
                 parsing_failed.append(result)
             else:
-                evaluated_outputs.append(evaluated_output.group().replace("$", ""))
+                evaluated_outputs.append(int(evaluated_output.group().replace("$", "")))
         
         return {
             "evaluated_outputs": evaluated_outputs,
