@@ -208,6 +208,18 @@ def searching_engine(input_dict, place) -> None :
                     "lat": recommend_place_info["lat"],
                     "lng": recommend_place_info["lng"]}
         logger.info(f"Selected place {selected}")
+        
+    for item in selected:
+        if isinstance(item['type'], list):
+            item['type'] = item['type'][0]
+            
+    # for key in candidates_per_category:
+    #     for item in candidates_per_category[key]:
+    #         if isinstance(item['type'], list):
+    #             item['type'] = item['type'][0]
+    logger.info(f"candidates_per_category {candidates_per_category}")
+    st.session_state.selected = selected
+    st.session_state.candidates_per_category = candidates_per_category
 
 
 
@@ -302,8 +314,7 @@ def show_loading() -> None:
 
 def get_alternative_locations(location_type: str) -> List[Dict]:
     """장소 타입별 대체 장소 목록 반환"""
-    global candidates_per_category
-    alternatives = copy.deepcopy(candidates_per_category)
+    alternatives = copy.deepcopy(st.session_state.candidates_per_category)
     for key, places in alternatives.items():
         for place in places:
             place["type"] = key
@@ -313,8 +324,8 @@ def get_alternative_locations(location_type: str) -> List[Dict]:
 def create_course_map(locations: list) -> folium.Map:
     """코스 위치들을 표시하는 지도 생성"""
     logger.debug(locations)
-    center_lat = locations[0]['lat']
-    center_lon = locations[0]['lon']
+    center_lat = sum(loc['lat'] for loc in locations) / len(locations)
+    center_lon = sum(loc['lon'] for loc in locations) / len(locations)
     
     m = folium.Map(location=[center_lat, center_lon], zoom_start=15)
     
@@ -339,9 +350,9 @@ def show_result() -> None:
 
     # 초기 코스 데이터 설정 및 원본 코스 저장
     if st.session_state.current_course is None:
-        global selected, candidates_per_category
+
         ui_course = {
-            "locations": copy.deepcopy(selected),
+            "locations": copy.deepcopy(st.session_state.selected),
 
         }
         st.session_state.current_course = ui_course
