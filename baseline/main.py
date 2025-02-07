@@ -312,8 +312,8 @@ def get_alternative_locations(location_type: str) -> List[Dict]:
 
 def create_course_map(locations: list) -> folium.Map:
     """코스 위치들을 표시하는 지도 생성"""
-    center_lat = sum(loc['lat'] for loc in locations) / len(locations)
-    center_lon = sum(loc['lon'] for loc in locations) / len(locations)
+    center_lat = locations[0]['lat']
+    center_lon = locations[0]['lon']
     
     m = folium.Map(location=[center_lat, center_lon], zoom_start=15)
     
@@ -409,7 +409,9 @@ def show_result() -> None:
                                 st.markdown("**추천 이유**")
                                 st.write(f"🏠 {alt['address']}")
                                 st.write(f"📍 {alt['description']}")
-                                st.write(f"⭐ 평점 : {alt['rating']}")
+                                if alt['rating'] is not None : 
+                                    st.write(f"⭐ 평점 : {alt['rating']}")
+                                else : st.write(f"⭐ 평점 : 아직 정보가 없습니다.")
                                 
                             with col2:
                                 if st.button(
