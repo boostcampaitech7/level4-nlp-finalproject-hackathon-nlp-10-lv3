@@ -131,24 +131,27 @@ class CourseEvaulator():
                 print("The process is canceled")
                 break
 
-    def get_results(self):
+    def get_raw_results(self):
         result_file_id = self.client.batches.retrieve(self.batch_job.id).output_file_id
         results = self.client.files.content(result_file_id).content.decode('utf-8')
-        results = [json.loads(line)["response"]["body"]["choices"][0]["message"]["content"]
+        return [json.loads(line)["response"]["body"]["choices"][0]["message"]["content"]
                 for line in results.split('\n') if line]
+
+    def get_results(self):
+        raw_results = self.get_raw_results()
         evaluated_outputs = [
             int(
                 re.search(
                     r"\$\$\$\$\d+\$\$\$\$",
                     result
                 ).group().replace("$", "")
-            ) for result in results
+            ) for result in raw_results
         ]
         suitability = sum(evaluated_outputs)/len(evaluated_outputs)
         print("\n**********************************************************************************")
         print(f"The Suitability Score: {suitability}")
         print("**********************************************************************************")
-        return evaluated_outputs
+        return evaluated_outputs, raw_results
     
 def process_course(x):
     trans_table = str.maketrans({"[": "", "]": "", "'": "", " ": ""})
@@ -192,6 +195,6 @@ if __name__=="__main__":
     course_evaluator.save_requests(sys_prmpt, usr_prmpts, file_path)
     course_evaluator.evaluate()
 
-    results = course_evaluator.get_results()
+    results, raw_results = course_evaluator.get_results()
     df["evaluation"] = results
     df.to_csv(os.paht.join("..", "data", "evaluated.csv"), index=False)
