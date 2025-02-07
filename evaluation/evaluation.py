@@ -13,6 +13,26 @@ from utils.util import load_yaml
 
 
 class CourseEvaulator():
+    """
+    경로 생성 능력을 평가하기 위한 모델
+
+    사용자 정보 및 요구사항을 기반으로 생성된 카테고리 경로에 대한 평가 수행
+    일반적으로 경로 생성 시 문제될 만한 내용들을 기준으로 평가 guide line을 작성하고,
+    해당 guide line을 기반으로 LLM 평가 진행
+
+    Args:
+        api_key (str): OpenAI API key
+        model (str, optional): 사용할 모델명
+        max_tokens (int, optional): 최대 출력 토큰수
+        temperature (float, optional): 출력 분포의 첨도를 조정하는 0에서 1사이의 값
+        top_p (float, optional): 출력 토큰으로 고려할 범위를 결정하는 확률 값
+        frequency_penalty (float, optional): 생성된 토큰의 빈도 기반으로 페널티 부여. 양수 값이 반복을 방지. -2에서 2사이의 값
+        presence_penalty (float, optional): 생성된 토큰의 존재 기반으로 페널티 부여. 양수 값이 재출현을 방지. -2에서 2사이의 값
+        stop (str | array, optional): 생성을 멈추는 토큰
+        logprobs (bool, optional): 생성된 토큰의 log probabilities를 출력할지에 대한 boolean value
+        top_logprobs (int, optional): 각 토큰 위치에서 몇 개의 상위 토큰을 출력할지 입력. 0에서 20사이의 값
+        n (int, optional): 각 input에 대해 생성할 chat completion choices의 수
+    """
     def __init__(
             self,
             api_key,
@@ -42,6 +62,16 @@ class CourseEvaulator():
         self.client = OpenAI(api_key=self.api_key)
     
     def create_completion(self, sys_prmpt, usr_prmpt):
+        """
+        Chat completion을 생성하여, API 모델 호출
+
+        Args:
+            sys_prmpt (str): System prompt
+            usr_prmpt (str): User input
+
+        Returns:
+            ChatCompletion: OpenAI API의 응답을 나타내는 ChatCompletion 객체
+        """
         return self.client.chat.completions.create(
             model=self.model,
             messages=[
@@ -60,23 +90,38 @@ class CourseEvaulator():
         )
     
     def evaluate(self, sys_prmpt, usr_prmpts):
-        raw_results = []
-        evaluated_outputs = []
-        parsing_failed = []
-        failure_index = []
-        used_tokens = {
+        """
+        생성된 경로를 평가하고, 결과를 출력하는 역할
+
+        Args:
+            sys_prmpt (str): System prompt
+            usr_prmpts (List[str]): User inputs
+
+        Returns:
+            Dict: 평가 결과에 대한 output을 dictionary 형태로 정리하여 반환환
+        """
+
+        ## Outputs
+        raw_results = [] ### raw text for evaluation
+        evaluated_outputs = [] ### parsed output for evaluation
+        parsing_failed = [] ### raw text which is failed to parsing
+        failure_index = [] ### index for dataframe which fail to call api
+        used_tokens = { ### token usage
             "cached_prompt_tokens": 0,
             "uncached_prompt_tokens": 0,
             "completion_tokens": 0,
         }
+
+        ## Use for-loop to process multiple inputs
         for i, usr_prmpt in tqdm(
             enumerate(usr_prmpts),
             desc="API calling",
             unit="request",
             total=len(usr_prmpts),
         ):
-            fail_cnt = 0
-            while fail_cnt<=5:
+            ## Process failure
+            fail_cnt = 0 ### count for api calling failure
+            while fail_cnt<=5: ### to resend the request when the previous request is failed
                 try:
                     completion = self.create_completion(sys_prmpt, usr_prmpt)
                     break
@@ -88,7 +133,7 @@ class CourseEvaulator():
                     fail_cnt +=1
                     print(f"Fail-{fail_cnt}")
                     print(f"Failed to connect to OpenAI API: {e}")
-                except openai.RateLimitError as e:
+                except openai.RateLimitError as e: ### don't need to resend
                     fail_cnt = 6
                     print(f"OpenAI API request exceeded rate limit: {e}")
                     break
@@ -97,21 +142,24 @@ class CourseEvaulator():
                     print(f"Fail-{fail_cnt}")
                     print(f"An unexpected error occurred: {e}")
 
-            if fail_cnt==6:
-                raw_results.append("Fail")
+            if fail_cnt==6: ### failure condition
+                raw_results.append("Fail") ### to align with the length of the dataframe
                 failure_index.append(i)
                 continue
-
+            
+            ## Get response
             raw_result = completion.choices[0].message.content
             raw_results.append(raw_result)
 
+            ## Parse output
             evaluated_output = re.search(r"\$\$\$\$\d+\$\$\$\$", raw_result)
-            if evaluated_output == None:
-                parsing_failed.append(raw_result)
+            if evaluated_output == None: ### when the parsing is failed
+                parsing_failed.append(raw_result) ### save it to parse manually
             else:
                 evaluated_outputs.append(int(evaluated_output.group().replace("$", "")))
-                time.sleep(5)
+            time.sleep(5) ### to conmply the request limit
             
+            ## Align output data
             usage = completion.usage
             cached_prompt_tokens = usage.prompt_tokens_details.cached_tokens
             uncached_prompt_tokens = usage.prompt_tokens - cached_prompt_tokens
@@ -129,6 +177,17 @@ class CourseEvaulator():
         }
 
     def make_request(self, id, sys_prmpt, usr_prmpt):
+        """
+        Batch API를 위한 request 생성
+
+        Args:
+            id (int): request id
+            sys_prmpt (str): system prompt
+            usr_prmpt (str): user input
+
+        Returns:
+            Dict: Batch API request
+        """
         return {
             'custom_id': f"{id}",
             'method': 'POST',
@@ -155,6 +214,14 @@ class CourseEvaulator():
         return [self.make_request(id, sys_prmpt, usr_prmpt) for id, usr_prmpt in enumerate(usr_prmpts)]
 
     def save_requests(self, sys_prmpt, usr_prmpts, file_path):
+        """
+        생성된 batch API request를 기반으로 request file 생성성
+
+        Args:
+            sys_prmpt (str): system prompt
+            usr_prmpts (List[str]): user inputs
+            file_path (str): request file path to save it
+        """
         self.file_path = file_path
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         
@@ -164,6 +231,12 @@ class CourseEvaulator():
                 f.write(json.dumps(request) + "\n")
 
     def create_batch(self):
+        """
+        Request file 기반으로 Batch API 호출
+
+        Returns:
+            bool: Request file 존재 여부에 따른 호출 여부
+        """
         if not os.path.exists(self.file_path):
             print("Requests does not exists.")
             print("You need to do '.save_requests()' first.")
@@ -181,7 +254,10 @@ class CourseEvaulator():
         return True
     
     def batch_evaluate(self):
-        fail_cnt = 0
+        """
+        Batch API의 진행 상황을 tracking하고, 결과를 표시시
+        """
+        fail_cnt = 0 ### count for failure
         if not self.create_batch():
             return
         while True:
@@ -209,13 +285,13 @@ class CourseEvaulator():
             elif status == "failed":
                 fail_cnt += 1
                 print(f"The API calling is failed {fail_cnt}-times")
-                if fail_cnt > 5:
+                if fail_cnt > 5: ### stop the resending process
                     print("[STOP] More than 5 failure.")
                     break
                 print("Try again after 1-min")
                 time.sleep(60)
                 print("Try")
-                self.create_batch()
+                self.create_batch() ### resend the request when the previous request is fail
             elif status == "expired":
                 print("The process is expired, because it is not finished in 24hours")
                 break
@@ -224,15 +300,27 @@ class CourseEvaulator():
                 break
 
     def get_raw_results_batch(self):
+        """
+        Batch API 작업 완료 후, 작업 결과를 받아와 output text를 출력
+
+        Returns:
+            List[str]: output text에 대한 list
+        """
         result_file_id = self.client.batches.retrieve(self.batch_job.id).output_file_id
         results = self.client.files.content(result_file_id).content.decode('utf-8')
         return [json.loads(line)["response"]["body"]["choices"][0]["message"]["content"]
                 for line in results.split('\n') if line]
 
     def get_results_batch(self):
-        raw_results = self.get_raw_results_batch()
-        evaluated_outputs = []
-        parsing_failed = []
+        """
+        Output text를 정리하여 반환
+
+        Returns:
+            Dict: 정리된 output
+        """
+        raw_results = self.get_raw_results_batch() ### raw text for evaluation
+        evaluated_outputs = [] ### parsed output for evaluation
+        parsing_failed = [] ### raw text which is failed to parsing
         for result in raw_results:
             evaluated_output = re.search(r"\$\$\$\$\d+\$\$\$\$", result)
             if evaluated_output == None:
@@ -248,6 +336,16 @@ class CourseEvaulator():
         }
     
 def process_course(x):
+    """
+    입력된 dataset의 course 변수 형태 변환
+    list형태의 courser변수를 A-B-C의 경로 형태로 변환
+
+    Args:
+        x (str): "[A, B, C]"의 list 형태
+
+    Returns:
+        str: A-B-C의 경로 형태
+    """
     trans_table = str.maketrans({"[": "", "]": "", "'": "", " ": ""})
     result = x.translate(trans_table)
     result = result.split(",")
