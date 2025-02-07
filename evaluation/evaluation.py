@@ -288,14 +288,12 @@ if __name__=="__main__":
     CONFIG_DIR = os.path.join("..", "evaluation", "configs.yaml")
     gen_configs = load_yaml(CONFIG_DIR)
 
-    file_path = os.path.join("..", "db", "requests.jsonl")
-
     course_evaluator = CourseEvaulator(api_key=api_key, **gen_configs)
     results = course_evaluator.evaluate(sys_prmpt, usr_prmpts)
     df["evaluation"] = results["evaluated_outputs"]
 
-    tot_sum = sum(filter(None, results["evaluated_outputs"]))
-    tot_len = len(list(filter(None, results["evaluated_outputs"])))
+    tot_sum = sum(results["evaluated_outputs"])
+    tot_len = len(results["evaluated_outputs"])
     failure_len = len(results["parsing_failed"])
     suitability = tot_sum/tot_len
     failure_ratio = failure_len/tot_len
@@ -303,14 +301,17 @@ if __name__=="__main__":
     cached_prompt_tokens = results["used_tokens"]["cached_prompt_tokens"]
     uncached_prompt_tokens = results["used_tokens"]["uncached_prompt_tokens"]
     completion_tokens = results["used_tokens"]["completion_tokens"]
+    cost = (1.25*cached_prompt_tokens + 2.5*uncached_prompt_tokens + 10*completion_tokens)/1e+6
     print("\n**********************************************************************************")
     print("***Results***")
-    print(f"The Suitability Score: {suitability}")
-    print(f"The Failure Ratio: {failure_ratio}\n")
+    print(f"The Suitability Score: {suitability:.4f} ({tot_sum}/{tot_len})")
+    print(f"The Failure Ratio: {failure_ratio:.4f} ({failure_len}/{tot_len})")
+    print(f"The Parsing Failure Ratio: {failure_ratio:.4f} ({failure_len}/{tot_len})\n")
     print("***Token Usage***")
     print(f"Uncached Input Tokens: {uncached_prompt_tokens}")
     print(f"Cached Input Tokens: {cached_prompt_tokens}")
     print(f"Output Tokens: {completion_tokens}")
+    print(f"Cost: {cost:4f}$")
     print("**********************************************************************************")
 
     df.to_csv(os.paht.join("..", "db", "evaluation", "evaluated.csv"), index=False)
