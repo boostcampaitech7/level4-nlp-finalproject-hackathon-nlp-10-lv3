@@ -147,15 +147,13 @@ class CourseEvaulator():
                 evaluated_outputs.append(None)
                 parsing_failed.append(result)
             else:
-                evaluated_outputs.append(evaluated_output.group().replace("$", ""))  
-
-        tot_sum = sum(filter(None, evaluated_outputs))
-        tot_len = len(list(filter(None, evaluated_outputs)))
-        suitability = tot_sum/tot_len
-        print("\n**********************************************************************************")
-        print(f"The Suitability Score: {suitability}")
-        print("**********************************************************************************")
-        return evaluated_outputs, raw_results, parsing_failed
+                evaluated_outputs.append(evaluated_output.group().replace("$", ""))
+        
+        return {
+            "evaluated_outputs": evaluated_outputs,
+            "parsing_failed": parsing_failed,
+            "raw_results": raw_results,
+        }
     
 def process_course(x):
     trans_table = str.maketrans({"[": "", "]": "", "'": "", " ": ""})
@@ -201,6 +199,14 @@ if __name__=="__main__":
 
     results, raw_results, parsing_failed = course_evaluator.get_results()
     df["evaluation"] = results
+
+    tot_sum = sum(filter(None, results["evaluated_outputs"]))
+    tot_len = len(list(filter(None, results["evaluated_outputs"])))
+    suitability = tot_sum/tot_len
+    print("\n**********************************************************************************")
+    print(f"The Suitability Score: {suitability}")
+    print("**********************************************************************************")
+
     df.to_csv(os.paht.join("..", "db", "evaluated.csv"), index=False)
 
     with open(os.path.join("..", "db", "evaluation", 'raw_results.txt'), 'w') as f:
