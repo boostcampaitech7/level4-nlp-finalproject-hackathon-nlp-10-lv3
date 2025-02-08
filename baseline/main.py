@@ -235,7 +235,7 @@ def show_details() -> None:
     with st.form(key="details_form"):
         # 연령대 선택
         age = st.number_input(
-            label = "연령대",
+            label = "이용하실 분의 나이가 어떻게 되나요?",
             min_value = 10,
             max_value = 100,
             value = 20,
@@ -244,18 +244,18 @@ def show_details() -> None:
         
         # 성별 선택
         gender = st.radio(
-            "성별",
+            "성별이 어떻게 되나요?",
             options=["남성", "여성", "기타"],
             horizontal=True
         )
         
         # 장소 선택
-        place_sel = st.text_area(
-            "어디를 가고 싶으신가요?",
+        place_sel = st.text_input(
+            "가고자 하는 지역이나 위치의 지명을 알려주세요.",
             help="구체적인 지명을 자유롭게 입력해주세요", 
-            placeholder="예: 경복궁, 홍대"
+            placeholder="가고자 하시는 장소의 구체적인 지명을 알려주시면 정확한 결과를 드릴 수 있습니다. 예: 경복궁, 안국역, 종로3가역"
             )
-        
+       
         # 이용시작 시간
         current_datetime = datetime.now()       
         selected_date = st.date_input("코스를 이용할 날짜를 선택해주세요", value=current_datetime.date())
