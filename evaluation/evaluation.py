@@ -9,7 +9,7 @@ import pandas as pd
 import openai
 from openai import OpenAI
 
-from utils.util import load_yaml
+from ..utils.util import load_yaml
 
 
 class CourseEvaulator():
