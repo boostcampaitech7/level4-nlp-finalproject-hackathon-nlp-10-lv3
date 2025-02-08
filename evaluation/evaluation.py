@@ -365,22 +365,22 @@ if __name__=="__main__":
     )
     arg = args.parse_args()
 
-    # Loading&Processing dataframe
+    ## Load&Process dataframe
     df = pd.read_csv(os.path.join("db", f"{arg.file_name}.csv"))
-    df["generated_route"] = df["generated_route"].map(process_course)
+    df["generated_route"] = df["generated_route"].map(process_course) ### course transformation: [A, B, C] -> A-B-C
     
     data_size = df.shape[0]
     idx_1 = df["generated_route"]=="0"
     idx_2 = df["generated_route"]== 0
     cnt_0 = sum(idx_1 | idx_2)
-    df = df[~(idx_1 | idx_2)]
-    df.dropna(inplace=True)
+    df = df[~(idx_1 | idx_2)] ### remove not generated data
+    df.dropna(inplace=True) ### remove NA
     print(f"Count for zero: {cnt_0}/{data_size}\n")
 
-    # Loading environmental variable - Clova Studio API key
+    ## Load environmental variable - Clova Studio API key
     api_key = os.getenv("OPENAI_API_KEY")
 
-    # Loading prompt templates for generating reasoning
+    ## Load prompt templates for generating reasoning
     PROMPT_DIR = os.path.join("prompts", "cate_crs_eval_prmpt.yaml")
     prompts = load_yaml(PROMPT_DIR)
 
@@ -396,14 +396,16 @@ if __name__=="__main__":
         ) for _, row in df.iterrows()
     ]
 
-    # call generation configuration
+    ## Call generation configuration
     CONFIG_DIR = os.path.join("evaluation", "configs.yaml")
     gen_configs = load_yaml(CONFIG_DIR)
 
+    ## Call evaluation model
     course_evaluator = CourseEvaulator(api_key=api_key, **gen_configs)
     results = course_evaluator.evaluate(sys_prmpt, usr_prmpts)
     df["evaluation"] = results["evaluated_outputs"]
 
+    ## Log evaluation results & token usages
     tot_sum = sum(results["evaluated_outputs"])
     tot_len = len(results["evaluated_outputs"])
     failure_len = len(results["parsing_failed"])
@@ -427,6 +429,7 @@ if __name__=="__main__":
     print(f"Cost: {cost:4f}$")
     print("**********************************************************************************")
 
+    ## Save evaluation outputs
     SAVING_DIR = os.path.join("db", "evaluation", f"{arg.file_name}")
     if not os.path.exists(SAVING_DIR):
         os.makedirs(SAVING_DIR)
