@@ -369,12 +369,12 @@ if __name__=="__main__":
     df = pd.read_csv(os.path.join("db", f"{arg.file_name}.csv"))
     df["generated_route"] = df["generated_route"].map(process_course) ### course transformation: [A, B, C] -> A-B-C
     
-    data_size = df.shape[0]
     idx_1 = df["generated_route"]=="0"
     idx_2 = df["generated_route"]== 0
     cnt_0 = sum(idx_1 | idx_2)
     df = df[~(idx_1 | idx_2)] ### remove not generated data
     df.dropna(inplace=True) ### remove NA
+    data_size = df.shape[0]
     print(f"Count for zero: {cnt_0}/{data_size}\n")
 
     ## Load environmental variable - Clova Studio API key
