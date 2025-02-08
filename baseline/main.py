@@ -129,7 +129,7 @@ def searching_engine(input_dict, place) -> None :
     # """
     ## Inputs and Paramters (Requirements)
     w = 0.5
-    k = 30
+    k = 10
 
     ## Retrieval
     ### Load retrieval module
@@ -177,14 +177,20 @@ def searching_engine(input_dict, place) -> None :
             selected_candidate.append(sel_info) # 선택된 후보지들과의 거리와 시간 계산한 값들
         candidates_per_category[category[0]] = selected_candidate # 후보지 목록들 추가 (for view)
         # chatX Model을 사용해서 장소 추천
-        recommend_query = rec.generate_prompt(now_place["name"], input_dict["request"], selected_candidate)
-        response_rec = rec.invoke(recommend_query)
-        # Parsing Response
-        parsing_output = rec.parse_output(response_rec.content)
-        logger.debug(f'{parsing_output}')
-        recommend_id = parsing_output["id"] # id를 가져와서 선택한 후보지 정보 가져옴
-        recommend_place_info = get_candidate_place(candidate_places, recommend_id)
-
+        retry_count = 0
+        while True:
+            try:
+                recommend_query = rec.generate_prompt(now_place["name"], input_dict["request"], selected_candidate)
+                response_rec = rec.invoke(recommend_query)
+                # Parsing Response
+                parsing_output = rec.parse_output(response_rec.content)
+                recommend_id = parsing_output["id"] # id를 가져와서 선택한 후보지 정보 가져옴
+                recommend_place_info = get_candidate_place(candidate_places, recommend_id)
+                break # Parsing이 제대로 된 경우 break
+            except Exception as e:
+                retry_count+=1
+                logger.error(f"Parsing Error : Cannot Extract ID, Retry Generating (Retry : {retry_count})")
+        
         for retrieve_candidate in retrieved_outputs[category[0]]:
             if retrieve_candidate["id"] == int(recommend_id):
                 recommend_review = retrieve_candidate["text"]
