@@ -65,7 +65,8 @@ def initialize_session_state() -> None:
         st.session_state.current_course = None
     if "alternative_locations" not in st.session_state:
         st.session_state.alternative_locations = {}
-
+    if "saved_courses" not in st.session_state:
+        st.session_state.saved_courses = []
 def show_init() -> None:
     """초기화면 표시"""
     st.title("AI 코스 추천 시스템")
@@ -240,7 +241,7 @@ def show_details() -> None:
     with st.form(key="details_form"):
         # 연령대 선택
         age = st.number_input(
-            label = "연령대",
+            label = "이용하실 분의 나이가 어떻게 되나요?",
             min_value = 10,
             max_value = 100,
             value = 20,
@@ -249,18 +250,18 @@ def show_details() -> None:
         
         # 성별 선택
         gender = st.radio(
-            "성별",
+            "성별이 어떻게 되나요?",
             options=["남성", "여성", "기타"],
             horizontal=True
         )
         
         # 장소 선택
-        place_sel = st.text_area(
-            "어디를 가고 싶으신가요?",
+        place_sel = st.text_input(
+            "가고자 하는 지역이나 위치의 지명을 알려주세요.",
             help="구체적인 지명을 자유롭게 입력해주세요", 
-            placeholder="예: 경복궁, 홍대"
+            placeholder="가고자 하시는 장소의 구체적인 지명을 알려주시면 정확한 결과를 드릴 수 있습니다. 예: 경복궁, 안국역, 종로3가역"
             )
-        
+       
         # 이용시작 시간
         current_datetime = datetime.now()       
         selected_date = st.date_input("코스를 이용할 날짜를 선택해주세요", value=current_datetime.date())
@@ -336,27 +337,30 @@ def create_course_map(locations: list) -> folium.Map:
     m = folium.Map(location=[center_lat, center_lon], zoom_start=15)
     
     # 위치 마커 추가
-    for idx, loc in enumerate(locations, 1):
+    number_icon =  [ "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
+    for idx, loc in enumerate(locations, 0):
         folium.Marker(
             location=[loc['lat'], loc['lon']],
             popup=loc['name'],
-            icon=folium.Icon(color='red', icon='info-sign'),
-            tooltip=f"{idx}. {loc['name']}"
+            icon=folium.DivIcon(
+            icon_size=(20, 20),
+            icon_anchor=(10, 10),
+            html=f'<div style="font-size: 20px;">{number_icon[idx]}</div>'
+        ),
+            tooltip=f"{idx+1}. {loc['name']}",
         ).add_to(m)
-        
-    # 경로 선 추가
-    points = [[loc['lat'], loc['lon']] for loc in locations]
-    folium.PolyLine(points, weight=2, color='blue', opacity=0.8).add_to(m)
-        
     return m
 
 def show_result() -> None:
     """결과 화면 표시"""
     st.title("AI 추천 코스")
+    
 
+    
+
+    
     # 초기 코스 데이터 설정 및 원본 코스 저장
     if st.session_state.current_course is None:
-
         ui_course = {
             "locations": copy.deepcopy(st.session_state.selected),
 
@@ -364,42 +368,73 @@ def show_result() -> None:
         st.session_state.current_course = ui_course
         # 원본 코스 저장
         st.session_state.original_course = copy.deepcopy(ui_course)
+        
+    # 코스에서 중복 장소 처리
+    seen_names = {}
+    alter = st.session_state.candidates_per_category
+    key_list = list(alter.keys())
+
+    for i, location in enumerate(st.session_state.current_course["locations"]):
+        location_name = location["name"]
+        if location_name in seen_names:
+            previous_index = seen_names[location_name]
+            if alter[key_list[previous_index]][1]:
+                tmp = st.session_state.current_course["locations"][previous_index]
+                st.session_state.current_course["locations"][previous_index] = alter[key_list[previous_index]][1]
+                st.session_state.current_course["locations"][previous_index]["type"] = key_list[previous_index]
+                break
+        else:
+            seen_names[location_name] = i
+
+    # 최종적으로 상태 확인하기
+    print("최종 candidates_per_category:")
+    print(st.session_state.candidates_per_category)
+
+    print("최종 current_course:")
+    print(st.session_state.current_course)
 
     # 입력 정보 요약
     with st.expander("입력하신 정보", expanded=False):
         st.write("**검색 조건**")
-        st.write(f"- 검색어: {st.session_state.user_query}")
-        st.write(f"- 연령대: {st.session_state.age}")
-        st.write(f"- 성별: {st.session_state.gender}")
-        st.write(f"- 장소: {st.session_state.place}")
-        st.write(f"- 예상시작시간 : {st.session_state.start_day_and_time}")
+        st.write(f"🔍 검색어: {st.session_state.user_query}")
+        st.write(f"👤 연령대: {st.session_state.age}")
+        st.write(f"🚹/🚺 성별: {st.session_state.gender}")
+        st.write(f"📍 장소: {st.session_state.place}")
+        st.write(f"⏰ 예상시작시간 : {st.session_state.start_day_and_time}")
 
     # 좌우 컬럼 생성
     left_col, right_col = st.columns([5, 5])
 
     # 왼쪽 컬럼: 코스 정보
     with left_col:
-        st.subheader("추천 코스 상세")
+        st.subheader("AI 추천 코스 상세")
         course = st.session_state.current_course
 
 
 
         # 각 장소별 상세 정보
         for i, loc in enumerate(course['locations'], 1):
-            with st.expander(f"{i}. {loc['name']}", expanded=True):
+            with st.expander(f"{i}. {loc['type']}",expanded=True):
+                st.markdown(f"#### {i}. {loc['name']}")
+                rating= '<p>⭐ 평점: ' + str(loc['rating']) + '</p>' if loc['rating'] is not None else '<p>⭐ 평점: 아직 정보가 없습니다.</p>'
+                # Streamlit에서 HTML 출력
+                st.markdown(rating, unsafe_allow_html=True)
                 st.write(f"🏠 {loc['address']}")
+                st.write("**<추천 분석>**")
                 st.write(f"📍 {loc['description']}")
                 # 대체 장소 보기 상태 관리
                 location_key = f"show_alternatives_{i}"
                 if location_key not in st.session_state:
                     st.session_state[location_key] = False
-                
+            
+
                 # 대체 장소 선택 버튼
                 if st.button(
                     "다른 장소 보기" if not st.session_state[location_key] else "추천 장소 숨기기", 
                     key=f"change_{i}"
                 ):
                     st.session_state[location_key] = not st.session_state[location_key]
+                    st.rerun()
 
                 # 대체 장소 목록 표시
                 if st.session_state[location_key]:
@@ -419,36 +454,81 @@ def show_result() -> None:
                     
                     # 각 대체 장소별 상세 정보 표시
                     for alt in alternatives:
+    
                         with st.container():
-                            st.markdown(f"#### → {alt['name']}")
-                            col1, col2 = st.columns([7, 3])
-                            
-                            with col1:
-                                st.markdown("**추천 이유**")
-                                st.write(f"🏠 {alt['address']}")
-                                st.write(f"📍 {alt['description']}")
-                                if alt['rating'] is not None : 
-                                    st.write(f"⭐ 평점 : {alt['rating']}")
-                                else : st.write(f"⭐ 평점 : 아직 정보가 없습니다.")
-                                
-                            with col2:
-                                if st.button(
-                                    "이 장소로 변경", 
-                                    key=f"select_{alt['name']}_{i}",
-                                ):
-                                    new_course = copy.deepcopy(st.session_state.current_course)
-                                    new_course['locations'][i-1] = alt
-                                    # 현재 위치의 대체 장소 목록 접기
-                                    st.session_state[location_key] = False
-                                    st.session_state.current_course = new_course
-                                    st.rerun()
-                            st.write("---")
+                            if any(alt['name'] == alt2['name']  for alt2 in st.session_state.current_course['locations']) :
+                                pass
+                            else : 
+                                st.markdown(
+                                    f"""
+                                    <div style="
+                                        border: 2px solid #ddd; 
+                                        border-radius: 10px; 
+                                        padding: 15px; 
+                                        margin-bottom: 10px;
+                                        background-color: #f9f9f9;">
+                                        <h4>→ {alt['name']}</h4>
+                                        <p>🏠 {alt['address']}</p>
+                                        {'<p>⭐ 평점: ' + str(alt['rating']) + '</p>' if alt['rating'] is not None else '<p>⭐ 평점: 아직 정보가 없습니다.</p>'}
+                                        <p><b style="color: #555;"><추천 분석></b></p>
+                                        <p>📍 {alt['description']}</p>
+                                    </div>
+                                    """, 
+                                    unsafe_allow_html=True
+                                )
+                                col1, col2 = st.columns([7, 3])
+                                with col2:
+
+                                    
+                                    if st.button(
+                                        "이 장소로 변경", 
+                                        key=f"select_{alt['name']}_{i}",
+                                    ):
+                                        new_course = copy.deepcopy(st.session_state.current_course)
+                                        new_course['locations'][i-1] = alt
+                                        # 현재 위치의 대체 장소 목록 접기
+                                        #st.session_state[location_key] = False
+                                        st.session_state.current_course = new_course
+                                        st.rerun()
+
+                        st.write("---")
+            if i != len(course['locations']) : 
+                st.markdown("<span style='font-size: 25px;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;⬇️</span>", unsafe_allow_html=True)
+
+                        
 
     # 오른쪽 컬럼: 지도
     with right_col:
         st.subheader("코스 지도")
         course_map = create_course_map(course['locations'])
         st_folium(course_map, width=None, height=600)
+        number_icon =  [ "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
+        with st.expander("상세 장소 정보", expanded=True):
+            types = [loc['type'] for loc in course['locations']]  # 'type'을 리스트로 추출
+            st.write("---")
+            st.write("< 코스 순서 >")
+            st.write(" ➡️ ".join(types))
+            st.write("---")
+            st.write("< 장소 이름 >")
+            for i in range(len(course['locations'])) :
+                st.write(f"{number_icon[i]} : {course['locations'][i]['name']}")
+        if st.button("현재 코스 저장"):
+            # 현재 코스를 저장
+            st.session_state.saved_courses.append(st.session_state.current_course.copy())
+            st.success("현재 코스가 저장되었습니다!")
+        with st.expander("코스 저장 목록", expanded=True):
+            if st.session_state.saved_courses:
+                for idx, saved_course in enumerate(st.session_state.saved_courses):
+                    if st.button(f"코스 {idx + 1}", key=f"course_button_{idx}"):
+                        st.session_state.current_course = saved_course
+                        st.rerun()
+                    else:
+                        st.write(" ")
+                
+            
+                  
+
+            
 
     # 네비게이션 버튼
     col1, col2 = st.columns(2)
