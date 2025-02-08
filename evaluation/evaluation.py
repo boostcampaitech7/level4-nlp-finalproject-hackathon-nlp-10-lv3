@@ -412,6 +412,7 @@ if __name__=="__main__":
     completion_tokens = results["used_tokens"]["completion_tokens"]
     cost = (1.25*cached_prompt_tokens + 2.5*uncached_prompt_tokens + 10*completion_tokens)/1e+6
     print("\n**********************************************************************************")
+    print(f"**Output for {arg.file_name}")
     print("***Results***")
     print(f"The Suitability Score: {suitability:.4f} ({tot_sum}/{tot_len})")
     print(f"The Failure Ratio: {failure_ratio:.4f} ({failure_len}/{tot_len})")
