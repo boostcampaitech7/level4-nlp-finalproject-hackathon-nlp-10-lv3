@@ -10,7 +10,7 @@ import pandas as pd
 import openai
 from openai import OpenAI
 
-sys.path.append("..")
+sys.path.append("/data/ephemeral/home/kyungjun/level4-nlp-finalproject-hackathon-nlp-10-lv3/")
 from utils.util import load_yaml
 
 
@@ -358,7 +358,7 @@ if __name__=="__main__":
     args = argparse.ArgumentParser()
     args.add_argument(
         "-f",
-        "-file_name",
+        "--file_name",
         default=None,
         type=str,
         help="The file name which has the generated route",
@@ -366,7 +366,7 @@ if __name__=="__main__":
     arg = args.parse_args()
 
     # Loading&Processing dataframe
-    df = pd.read_csv(os.path.join("..", "db", f"{arg.file_name}.csv"))
+    df = pd.read_csv(os.path.join("db", f"{arg.file_name}.csv"))
     df["generated_route"] = df["generated_route"].map(process_course)
     
     data_size = df.shape[0]
@@ -381,7 +381,7 @@ if __name__=="__main__":
     api_key = os.getenv("OPENAI_API_KEY")
 
     # Loading prompt templates for generating reasoning
-    PROMPT_DIR = os.path.join("..", "prompts", "cate_crs_eval_prmpt.yaml")
+    PROMPT_DIR = os.path.join("prompts", "cate_crs_eval_prmpt.yaml")
     prompts = load_yaml(PROMPT_DIR)
 
     sys_prmpt = prompts["sys_prmpt"]
@@ -397,7 +397,7 @@ if __name__=="__main__":
     ]
 
     # call generation configuration
-    CONFIG_DIR = os.path.join("..", "evaluation", "configs.yaml")
+    CONFIG_DIR = os.path.join("evaluation", "configs.yaml")
     gen_configs = load_yaml(CONFIG_DIR)
 
     course_evaluator = CourseEvaulator(api_key=api_key, **gen_configs)
@@ -427,12 +427,16 @@ if __name__=="__main__":
     print(f"Cost: {cost:4f}$")
     print("**********************************************************************************")
 
-    df.to_csv(os.path.join("..", "db", "evaluation", f"{arg.file_name}", "evaluated.csv"), index=False)
+    SAVING_DIR = os.path.join("db", "evaluation", f"{arg.file_name}")
+    if not os.path.exists(SAVING_DIR):
+        os.makedirs(SAVING_DIR)
 
-    with open(os.path.join("..", "db", "evaluation", f"{arg.file_name}", 'raw_results.txt'), 'w') as f:
+    df.to_csv(os.path.join(SAVING_DIR, "evaluated.csv"), index=False)
+
+    with open(os.path.join(SAVING_DIR, 'raw_results.txt'), 'w') as f:
         for item in results["raw_results"]:
             f.write(str(item) + '\n')
 
-    with open(os.path.join("..", "db", "evaluation", f"{arg.file_name}", 'parsing_failed.txt'), 'w') as f:
+    with open(os.path.join(SAVING_DIR, 'parsing_failed.txt'), 'w') as f:
         for item in results["parsing_failed"]:
             f.write(str(item) + '\n')
