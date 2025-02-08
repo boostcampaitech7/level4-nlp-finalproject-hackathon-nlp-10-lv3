@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import json
 import time
 import argparse
@@ -9,7 +10,8 @@ import pandas as pd
 import openai
 from openai import OpenAI
 
-from ..utils.util import load_yaml
+sys.path.append("..")
+from utils.util import load_yaml
 
 
 class CourseEvaulator():
