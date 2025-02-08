@@ -450,28 +450,30 @@ def show_result() -> None:
                     for alt in alternatives:
     
                         with st.container():
-                            st.markdown(
-                                f"""
-                                <div style="
-                                    border: 2px solid #ddd; 
-                                    border-radius: 10px; 
-                                    padding: 15px; 
-                                    margin-bottom: 10px;
-                                    background-color: #f9f9f9;">
-                                    <h4>→ {alt['name']}</h4>
-                                    <p>🏠 {alt['address']}</p>
-                                    {'<p>⭐ 평점: ' + str(alt['rating']) + '</p>' if alt['rating'] is not None else '<p>⭐ 평점: 아직 정보가 없습니다.</p>'}
-                                    <p><b style="color: #555;"><추천 분석></b></p>
-                                    <p>📍 {alt['description']}</p>
-                                </div>
-                                """, 
-                                unsafe_allow_html=True
-                            )
-                            col1, col2 = st.columns([7, 3])
-                            with col2:
-                                if any(alt['name'] == alt2['name']  for alt2 in st.session_state.current_course['locations']) :
-                                     st.write("코스에 존재")
-                                else :
+                            if any(alt['name'] == alt2['name']  for alt2 in st.session_state.current_course['locations']) :
+                                pass
+                            else : 
+                                st.markdown(
+                                    f"""
+                                    <div style="
+                                        border: 2px solid #ddd; 
+                                        border-radius: 10px; 
+                                        padding: 15px; 
+                                        margin-bottom: 10px;
+                                        background-color: #f9f9f9;">
+                                        <h4>→ {alt['name']}</h4>
+                                        <p>🏠 {alt['address']}</p>
+                                        {'<p>⭐ 평점: ' + str(alt['rating']) + '</p>' if alt['rating'] is not None else '<p>⭐ 평점: 아직 정보가 없습니다.</p>'}
+                                        <p><b style="color: #555;"><추천 분석></b></p>
+                                        <p>📍 {alt['description']}</p>
+                                    </div>
+                                    """, 
+                                    unsafe_allow_html=True
+                                )
+                                col1, col2 = st.columns([7, 3])
+                                with col2:
+
+                                    
                                     if st.button(
                                         "이 장소로 변경", 
                                         key=f"select_{alt['name']}_{i}",
@@ -479,7 +481,7 @@ def show_result() -> None:
                                         new_course = copy.deepcopy(st.session_state.current_course)
                                         new_course['locations'][i-1] = alt
                                         # 현재 위치의 대체 장소 목록 접기
-                                        st.session_state[location_key] = False
+                                        #st.session_state[location_key] = False
                                         st.session_state.current_course = new_course
                                         st.rerun()
 
