@@ -90,6 +90,7 @@ def show_init() -> None:
             if st.button(query, key=f"example_{query}"):
                 st.session_state.temp_query = query
                 on_search_submit()
+                st.rerun()
 
 def on_search_submit() -> None:
     """검색어 제출 처리"""
@@ -104,7 +105,7 @@ def on_search_submit() -> None:
         st.warning("검색어를 입력해주세요.")
         return
     st.session_state.step = "details"
-    st.rerun()
+
 
 
 def searching_engine(input_dict, place) -> None :
