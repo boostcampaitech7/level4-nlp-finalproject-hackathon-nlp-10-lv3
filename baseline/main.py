@@ -122,7 +122,7 @@ def searching_engine(input_dict, place) -> None :
     # """
     # ChatModel을 사용해서 카테고리 기반 코스를 추출하는 코드
     # """
-    choosed_category = category_generator.get_all_category(input_dict) # List[Tuple[str, List[str]]]
+    choosed_category = category_generator.get_all_category(input_dict, candidate_places) # List[Tuple[str, List[str]]]
     
     # TODO: 카테고리에 맞는 후보지 추출 (call Retrieve Module)
     # """ 

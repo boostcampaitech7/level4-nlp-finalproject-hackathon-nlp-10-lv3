@@ -8,9 +8,16 @@ class Category:
     def __init__(self, chatModel, database , extract_symbol="$%^&"):
         self.chatModel = chatModel
 
-        place_info = database.find_category_list()
+        # place_info = database.find_category_list()
+        
+        self.extract_symbol = extract_symbol
+        self.escaped_symbol = re.escape(self.extract_symbol)  # 정규식에서 안전하게 사용하도록 변환
+
+    def setting_category_list(self, candidate_places):
+        candidate_main_category = [cand['main_category'] for cand in candidate_places]
+        
         # 대분류 리스트
-        self.big_category_list = place_info['main_category'].value_counts().index.tolist()
+        self.big_category_list = list(set(candidate_main_category))
         # 음식점 -> 점심식사, 저녁식사 두 개의 값으로 변경
         self.big_category_list = [item if item != "음식점" else "점심식사" for item in self.big_category_list]
         self.big_category_list = [val for item in self.big_category_list for val in (["점심식사", "저녁식사"] if item == "점심식사" else [item])]
@@ -19,12 +26,14 @@ class Category:
         self.small_category_dict = {}
         for big_category in self.big_category_list:
             if (big_category == "점심식사") or (big_category == "저녁식사"):
-                self.small_category_dict[big_category] = place_info[place_info['main_category'] == "음식점"]['category'].value_counts().index.tolist()
+                candidate_small_category = [cand['category'] for cand in candidate_places if cand['main_category'] == "음식점"]
+                self.small_category_dict[big_category] = candidate_small_category
+                # self.small_category_dict[big_category] = place_info[place_info['main_category'] == "음식점"]['category'].value_counts().index.tolist()
             else:
-                self.small_category_dict[big_category] = place_info[place_info['main_category'] == big_category]['category'].value_counts().index.tolist()
+                candidate_small_category = [cand['category'] for cand in candidate_places if cand['main_category'] == big_category]
+                self.small_category_dict[big_category] = candidate_small_category
+                # self.small_category_dict[big_category] = place_info[place_info['main_category'] == big_category]['category'].value_counts().index.tolist()
 
-        self.extract_symbol = extract_symbol
-        self.escaped_symbol = re.escape(self.extract_symbol)  # 정규식에서 안전하게 사용하도록 변환
 
     def get_big_category(self, input_dict: dict) -> List[str]:
         system_prompt = f"""
@@ -179,7 +188,8 @@ class Category:
                 results.append((big_category, extracted_outputs))
         return results
     
-    def get_all_category(self, input_dict):
+    def get_all_category(self, input_dict, candidate_places):
+        self.setting_category_list(candidate_places)
         big_category = self.get_big_category(input_dict) # List[str]
         choosed_category = []
         for category in big_category:
