@@ -1,8 +1,8 @@
-import requests
-import json
 import re
+import json
+import yaml
 import time
-import os
+import requests
 from dotenv import load_dotenv
 
 # 환경 변수 로드
@@ -25,7 +25,7 @@ class CompletionExecutor:
             response_text = ""
             try:
                 with requests.post(self._host + '/testapp/v1/chat-completions/HCX-003',
-                                   headers=headers, json=completion_request, stream=True, timeout=30) as r:
+                                    headers=headers, json=completion_request, stream=True, timeout=30) as r:
                     if r.status_code == 200:
                         for line in r.iter_lines():
                             if line:
@@ -141,3 +141,10 @@ def coll_name_mapping(text):
             result += char
     
     return result
+
+def load_yaml(yaml_file):
+    # Load *.yaml
+    with open(yaml_file) as file:
+        output = yaml.safe_load(file) # Dictionary
+
+    return output
