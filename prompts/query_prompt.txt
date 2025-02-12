@@ -1,0 +1,13 @@
+**식당**
+{restaurant_retrieval}
+
+**카페**
+{cafe_retrieval}
+
+**기타 활동**
+{etc_retrieval}
+
+Q.
+{user_query}
+
+A.
