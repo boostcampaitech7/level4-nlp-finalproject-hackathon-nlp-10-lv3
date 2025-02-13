@@ -25,10 +25,10 @@ def get_lat_lon(query, NAVER_CLIENT_ID, NAVER_CLIENT_SECRET):
             item = data["items"][0]  # 첫 번째 검색 결과
             title = item["title"].replace("<b>", "").replace("</b>", "")  # HTML 태그 제거
             address = item["address"]  # 주소 정보
-            mapx = int(item["mapx"])  # 네이버 지도 x 좌표 (KATECH 좌표)
-            mapy = int(item["mapy"])  # 네이버 지도 y 좌표 (KATECH 좌표)
-            mapx = float(str(mapx)[0:3]+"."+str(mapx)[3:])
-            mapy = float(str(mapy)[0:2]+"."+str(mapy)[2:])
+            mapx = int(item["mapx"])  # 네이버 지도 x 좌표
+            mapy = int(item["mapy"])  # 네이버 지도 y 좌표
+            mapx = float(str(mapx)[0:3]+"."+str(mapx)[3:]) # longitude
+            mapy = float(str(mapy)[0:2]+"."+str(mapy)[2:]) # latitude
             logger.debug(f"📍 검색된 장소: {title} ({address}, {mapy} / {mapx})")
             return (mapx, mapy)
         else:

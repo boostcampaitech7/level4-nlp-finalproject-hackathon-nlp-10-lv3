@@ -3,6 +3,9 @@
 *.db
 *.pyc
 data/
-
+*.lock
 # dotenv
 .env
+
+#cache
+__pycache__

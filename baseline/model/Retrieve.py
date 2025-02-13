@@ -38,13 +38,6 @@ class Retrieval():
         return
     
     def load_DB(self):
-        """
-        VectorDB에 연결
-
-        Returns:
-            MilvusClient: VectorDB client
-        """
-        URI = os.path.join(".", "db", "course_rcmd.db")
         return MilvusClient(URI)
     
     def close_DB(self):
@@ -75,16 +68,6 @@ class Retrieval():
         return sparse_embedding
     
     def make_request(self, query, place_ids):
-        """
-        사용자 쿼리에 대해 vectorDB에 검색하기 위한 request 작성성
-
-        Args:
-            query (str): 사용자 요구사항
-            place_ids (List[str]): 검색 장소 기준 일정 거리 내 장소들의 ID
-
-        Returns:
-            List[AnnSearchRequest]: 검색할 내용에 대한 request 객체체
-        """
         dense_embedding = self.call_dense()
         sparse_embedding = self.call_sparse()
         dense_vector = dense_embedding.embed_query(query)
@@ -116,15 +99,6 @@ class Retrieval():
         return [dense_request, sparse_request]
     
     def search(self, category):
-        """
-        작성된 request 기반으로, hybrid search 수행행
-
-        Args:
-            category (str): 검색을 수행할 category
-
-        Returns:
-            List[Dict[str, str]]: 검색된 장소와 관련된 meta-data 및 review text
-        """
         res = self.client.hybrid_search(
             collection_name=coll_name_mapping(category),
             reqs=self.requests,
