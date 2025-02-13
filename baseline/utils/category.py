@@ -1,12 +1,14 @@
 import re
 from typing import List, Dict, Tuple
 import pandas as pd
+from loguru import logger
+import time
 
 class Category:
-    def __init__(self, chatModel, data_path: str, extract_symbol="$%^&"):
+    def __init__(self, chatModel, database , extract_symbol="$%^&"):
         self.chatModel = chatModel
 
-        place_info = pd.read_csv(data_path)
+        place_info = database.find_category_list()
         # 대분류 리스트
         self.big_category_list = place_info['main_category'].value_counts().index.tolist()
         # 음식점 -> 점심식사, 저녁식사 두 개의 값으로 변경
@@ -26,33 +28,40 @@ class Category:
 
     def get_big_category(self, input_dict: dict) -> List[str]:
         system_prompt = f"""
-        사용자가 실제 일정을 시작할 시작 시간이 주어지면 당일 22시까지의 일정을 계획할 것입니다.
-        사용자의 요구사항에 따라 일정을 계획할 것이며, 사용자의 연령대와 성별에 맞게 적절한 코스를 만들어야 합니다.
-
-        주어진 카테고리 중 요구 사항에 해당되는 카테고리를 선정하고 순서를 정해주세요.
-
-        카테고리 : [{", ".join(self.big_category_list)}] 
+        당신은 사용자의 요구사항을 바탕으로 적절한 카테고리 경로를 생성하는 AI입니다.
+        사용자의 요구사항을 분석하고, 연령대와 성별을 고려하여 대분류 카테고리 중심의 일정 경로를 생성하세요.
+        
+        # 규칙
+        1. 일정 시작 시간부터 최대 22시까지의 일정을 계획하세요.
+        2. 주어진 카테고리 중, 사용자의 요구에 가장 적합한 카테고리를 선택하고 순서를 정하세요.
+        3. 연령대 및 성별을 고려하여 적절한 카테고리를 조합하세요.
+        4. 출력 형식을 반드시 준수하며, 추가적인 설명 없이 카테고리 순서만 출력하세요.
+        
+        # 사용 가능한 카테고리
+        [{", ".join(self.big_category_list)}]
 
         # 예시 1
-        - 사용자 요구사항: "부모님 결혼기념일을 맞이해서 어떤 이벤트를 해야할까?"
+        - 사용자 요구사항: 부모님 결혼기념일을 맞이해서 어떤 이벤트를 해야할까?
         - 연령대: 50대
         - 성별: 혼성
         - 일정 시작 시각: 12시
-        - 답변: {self.extract_symbol}점식식사->카페->공연전시->저녁식사{self.extract_symbol}
-
+        - 답변: 점식식사->카페->공연전시->저녁식사
+        
         # 예시 2
-        - 사용자 요구사항: "여자친구와 100일을 맞이해서 데이트를 할건데 장소좀 추천해줘."
+        - 사용자 요구사항: 여자친구와 100일을 맞이해서 데이트를 할건데 장소좀 추천해줘.
         - 연령대: 20대
         - 성별: 혼성
         - 일정 시작 시각: 14시
-        - 답변: {self.extract_symbol}카페->체험관광->저녁식사->주점{self.extract_symbol}
-
+        - 답변: 카페->체험관광->저녁식사->주점
+        
         # 예시 3
-        - 사용자 요구사항: "기분도 우울한데 꿀꿀함을 달랠 곳 없나?"
+        - 사용자 요구사항: 기분도 우울한데 꿀꿀함을 달랠 곳 없나?
         - 연령대: 30대
         - 성별: 남성
         - 일정 시작 시각: 18시
-        - 답변: {self.extract_symbol}피크닉->저녁식사->카페{self.extract_symbol}
+        - 답변: 공원->저녁식사->카페
+
+        이제 위 형식에 맞춰 사용자의 요구사항을 분석하고, 카테고리 중심의 경로를 생성하세요.
         """
         
         inputs = f"""
@@ -65,14 +74,27 @@ class Category:
 
         outputs = ""
         extracted_outputs = []
+        print(inputs)
         while (not outputs) or (not extracted_outputs):
-            outputs = self.chatModel.get_answer(system_prompt, inputs)
-            match = re.search(fr'{self.escaped_symbol}(.*?){self.escaped_symbol}', outputs)
+            time.sleep(5)
+            messages = self.chatModel.template_message(system_prompt, inputs)
+            outputs = self.chatModel.invoke_message(messages).content
+            time.sleep(10)
+            print(outputs)
+            # match = re.search(fr'{self.escaped_symbol}(.*?){self.escaped_symbol}', outputs)
             try:
-                extracted_outputs = match.group(1).split("->")
+                # extracted_outputs = match.group(1).split("->")
+                extracted_outputs = outputs.split("->")
+                # 생성된 카테고리가 DB의 카테고리 목록과 일치하는지 확인
+                check = [eo for eo in extracted_outputs if eo in self.big_category_list]
+                if (len(extracted_outputs) >= 1) and (len(check) == len(extracted_outputs)):
+                    # A->B->C 형식을 지키는지 확인
+                    # 각 A, B, C가 DB의 카테고리 목록과 일치하는지 확인
+                    pass
+                else: # 제대로 생성 못함.
+                    extracted_outputs = []
             except:
                 pass
-        
         return extracted_outputs
 
 
@@ -92,7 +114,7 @@ class Category:
         - 일정 시작 시각: 15시
         - 대분류: 공원
         - 소분류: ['해당없음', '근린공원', '도시,테마공원', '산책로', '공원']
-        - 선택된 소분류: {self.extract_symbol}'산책로', '공원'{self.extract_symbol}
+        - 선택된 소분류: '산책로', '공원'
 
         # 예시 2
         - 사용자 요구사항: "기분도 꿀꿀한데 달달한 디저트가 먹고 싶어." 
@@ -101,7 +123,7 @@ class Category:
         - 일정 시작 시각: 17시
         - 대분류: 카페
         - 소분류: ['해당없음', '카페,디저트', '카페', '차', '아이스크림', '테이크아웃커피', '한방카페', '과일,주스전문점', '바나프레소', '떡카페', '와플', '초콜릿전문점', '케이크전문', '차,커피', '호떡', '블루보틀', '빙수', '룸카페', '다방', '도넛']
-        - 선택된 소분류: {self.extract_symbol}'카페,디저트', '아이스크림', '와플', '초콜릿전문점', '케이크전문', '빙수', '도넛'{self.extract_symbol}
+        - 선택된 소분류: '카페,디저트', '아이스크림', '와플', '초콜릿전문점', '케이크전문', '빙수', '도넛'
 
         # 예시 3
         - 사용자 요구사항: "오늘 나 불태울거야. 술집 좀 추천해줘." 
@@ -110,7 +132,7 @@ class Category:
         - 일정 시작 시각: 19시
         - 대분류: 주점
         - 소분류: ['해당없음', '맥주,호프', '요리주점', '바(BAR)', '이자카야', '와인', '포장마차', '술집', '라이브카페', '슈퍼,마트', '유흥주점']
-        - 선택된 소분류: {self.extract_symbol}'해당없음'{self.extract_symbol}
+        - 선택된 소분류: '해당없음'
         """
         
         input_format = """
@@ -132,13 +154,23 @@ class Category:
                                         big_category,
                                         self.small_category_dict[big_category])
             outputs = ""
-            extracted_outputs = ""
+            extracted_outputs = []
             while (not outputs) or (not extracted_outputs):
-                outputs = self.chatModel.get_answer(system_prompt, inputs)
-                match = re.search(fr'{self.escaped_symbol}(.*?){self.escaped_symbol}', outputs)
+                time.sleep(5)
+                messages = self.chatModel.template_message(system_prompt, inputs)
+                outputs = self.chatModel.invoke_message(messages).content
+                time.sleep(10)
+                logger.debug(outputs)
+                # match = re.search(fr'{self.escaped_symbol}(.*?){self.escaped_symbol}', outputs)
                 try:
-                    extracted_outputs = match.group(1).split(", ")
+                    # extracted_outputs = match.group(1).split(", ")
+                    extracted_outputs = outputs.split(", ")
                     extracted_outputs = [o.split("'")[1] for o in extracted_outputs]
+                    check = [eo for eo in extracted_outputs if eo in self.small_category_dict[big_category]]
+                    if (len(extracted_outputs) >= 1) and (len(check) == len(len(extracted_outputs))):
+                        pass
+                    else:
+                        extracted_outputs = []
                 except:
                     pass
             
@@ -146,5 +178,11 @@ class Category:
                 results.append(("음식점", extracted_outputs))
             else:
                 results.append((big_category, extracted_outputs))
-
         return results
+    
+    def get_all_category(self, input_dict):
+        big_category = self.get_big_category(input_dict) # List[str]
+        logger.debug(f"[DONE] Create Big Category")
+        choosed_category = self.get_small_category(big_category, input_dict) # List[Tuple[str, List[str]]]
+        logger.debug(f"[DONE] Create Small Category")
+        return choosed_category

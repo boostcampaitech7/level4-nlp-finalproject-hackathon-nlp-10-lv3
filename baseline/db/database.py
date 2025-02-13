@@ -1,8 +1,6 @@
 import sqlite3
 import pandas as pd
-
 import sqlite3
-import math
 
 class SQLiteDatabase:
     def __init__(self, db_path):
@@ -104,6 +102,11 @@ class SQLiteDatabase:
                    "latitude", "longitude", "rating", "price_per_one", "business_hours", "distance"]
         nearby_businesses = [dict(zip(columns, row)) for row in results]
         return nearby_businesses
+
+    def find_category_list(self):
+        query = "SELECT business_id, main_category, category FROM Category;"
+        df = pd.read_sql_query(query, self.conn)
+        return df
 
     def close(self):
         """데이터베이스 연결 종료"""
