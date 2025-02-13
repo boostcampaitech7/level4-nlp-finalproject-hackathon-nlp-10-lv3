@@ -1,0 +1,13 @@
+langchain-community
+langchain
+loguru
+geopy
+emoji
+requests
+pymysql
+pymilvus[model]
+konlpy
+pymilvus
+streamlit
+folium
+streamlit-folium

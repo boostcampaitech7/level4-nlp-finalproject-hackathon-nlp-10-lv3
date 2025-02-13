@@ -6,12 +6,12 @@ __pycache__/
 # Data
 *.csv
 *.db
+*.pyc
 data/
-db/
-
-# Dotenv
+*.lock
+# dotenv
 .env
-
+# cache
 # Jupyter Notebook
 *.ipynb_checkpoints
 *.ipynb
