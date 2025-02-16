@@ -1,7 +1,17 @@
-# Data
-.csv
-.db
-data/
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
 
+# Data
+*.csv
+*.db
+*.pyc
+data/
+*.lock
 # dotenv
 .env
+# cache
+# Jupyter Notebook
+*.ipynb_checkpoints
+*.ipynb
