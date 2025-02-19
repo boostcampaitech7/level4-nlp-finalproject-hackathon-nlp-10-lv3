@@ -56,7 +56,7 @@
 
 ## 아키텍처
 <p align="center">
-  <img src="figure/arch.png" width="600">
+  <img src="figure/arch.png" width="1000">
 
 >진행방법 | <br>  1) &nbsp;3사에 대한 장소정보와 리뷰 크롤링 후 전처리
 <br>  2) &nbsp;각 가게에 대한 리뷰를 요약
