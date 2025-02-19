@@ -185,7 +185,7 @@ streamlit run main.py # 스트림릿 UI실행
   - 평가 신뢰도를 높이고 continuous한 score를 얻기 위해, **20회 반복 평가 수행**
 
 <p align="center">
-  <img src="figure/eval1.png" width="600" >
+  <img src="figure/eval1.png" width="800" >
 
 - 평가 결과
   - 리뷰 개수 20개 이하인 데이터에서 대체로 높은 성적을 보였고,  
@@ -201,7 +201,7 @@ streamlit run main.py # 스트림릿 UI실행
 
 <br>
 
-### 경로 생성에 대한 평가
+### 경로 생성 모델 평가
 
 - 시나리오 데이터 생성
   - 실제 사용자 활용성에 대한 평가를 위해, 사용자 요구사항 데이터 생성
