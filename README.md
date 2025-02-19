@@ -13,7 +13,7 @@
 ## 📌프로젝트 개요
 
 <p align="center">
-  <img src="figure/wity_main.png" width="600">
+  <img src="figure/wity_main.png">
 
 </p>
 
