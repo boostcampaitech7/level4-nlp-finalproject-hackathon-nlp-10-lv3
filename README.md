@@ -1,4 +1,4 @@
-# WITY (What should I do TodaY)
+# :compass:WITY (What should I do TodaY)
 
 
 <p>
@@ -55,7 +55,7 @@
 <br>
 <br>
 
-## 아키텍처
+## :gear:아키텍처
 <p align="center">
   <img src="figure/arch.png" width="1000">
 
@@ -71,7 +71,7 @@
 <br>
 <br>
 
-## 프로젝트 진행 계획
+## 📆프로젝트 진행 계획
 
 <p align="center">
   <img src="figure/timeline.png" width="600">
@@ -82,7 +82,7 @@
 <br>
 <br>
 
-## 파일구조
+## 📂파일구조
 
 ```
   📦level4-nlp-finalproject-hackathon-nlp-10-lv3
@@ -148,7 +148,7 @@
 ```
 
 
-## How to run
+## ▶️How to run
 
 ```
 #사전 준비
