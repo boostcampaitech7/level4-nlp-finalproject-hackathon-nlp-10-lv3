@@ -1,12 +1,12 @@
 # 개인화 코스 추천 시스템
 
+
 <p>
-
-
-<img src="https://img.shields.io/badge/LangChain-0055CC?style=flat&logo=Chainlink&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/HyperCLOVA_X-00C853?style=flat&logo=Naver&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=Streamlit&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=HTML5&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=CSS3&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/Jira-0052CC?style=flat&logo=Jira&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/Notion-000000?style=flat&logo=Notion&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=GitHub&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/SQLite3-orange?style=flat&logo=sqlite&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/TmapAPI-Blue?style=flat&logo=map&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/Python-3776AB?style=square&logo=Python&logoColor=white"/>
-
-
+  <img src="https://img.shields.io/badge/Jira-0052CC?style=flat&logo=Jira&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/Confluence-172B4D?style=flat&logo=confluence&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/LangChain-0055CC?style=flat&logo=Chainlink&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/HyperCLOVA_X-00C853?style=flat&logo=Naver&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=Streamlit&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/SQLite3-orange?style=flat&logo=sqlite&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/Milvus-blue?style=flat&logo=milvus&logoColor=white"/>
 </p>
+
+
+
 
 
 ## 📌프로젝트 개요
