@@ -1,12 +1,13 @@
-# What should I do TodaY (WITY)
+# :compass:WITY (What should I do TodaY)
+
+
 
 <p>
-
-
-<img src="https://img.shields.io/badge/LangChain-0055CC?style=flat&logo=Chainlink&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/HyperCLOVA_X-00C853?style=flat&logo=Naver&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=Streamlit&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=HTML5&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=CSS3&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/Jira-0052CC?style=flat&logo=Jira&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/Notion-000000?style=flat&logo=Notion&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=GitHub&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/SQLite3-orange?style=flat&logo=sqlite&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/TmapAPI-Blue?style=flat&logo=map&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/Python-3776AB?style=square&logo=Python&logoColor=white"/>
-
-
+  <img src="https://img.shields.io/badge/Jira-0052CC?style=flat&logo=Jira&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/Confluence-172B4D?style=flat&logo=confluence&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/LangChain-0055CC?style=flat&logo=Chainlink&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/HyperCLOVA_X-00C853?style=flat&logo=Naver&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=Streamlit&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/SQLite3-orange?style=flat&logo=sqlite&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/Milvus-blue?style=flat&logo=milvus&logoColor=white"/>
 </p>
+
+
+
 
 
 ## 📌프로젝트 개요
@@ -29,6 +30,7 @@
 <br>
 
 ## 👥 팀원 및 역할
+### 팀원
 
 이정휘|강경준|김재겸|권지수|박동혁|이인설
 :-:|:-:|:-:|:-:|:-:|:-:
@@ -38,7 +40,7 @@
 
 <br>
 
-## 팀원 역할
+### 역할
 
 | 이름   | 역할 및 담당 업무 |
 |--------|--------------------------------------------------------------|
@@ -54,10 +56,10 @@
 <br>
 <br>
 
-
 ## 🏛️ 서비스 아키텍처
+
 <p align="center">
-  <img src="figure/arch.png" width="600">
+  <img src="figure/arch.png" width="1000">
 
 유저의 요구사항을 반영한 맞춤형 당일 일정 경로 추천을 목표로 하며, 이를 위해 카테고리 기반 경로 생성 후 최적의 장소 추천 방식을 채택하였습니다.
 
@@ -85,8 +87,6 @@ $$\text{Dense Score} = \frac{PosCnt}{PosCnt + NegCnt} PosScore - \frac{NegCnt}{P
   - TMap API를 사용해 후보 장소와 이전에 선택된 장소와의 거리와 소요시간을 구함
 - LLM Prompting으로 후보 장소 reranking 수행
   - [recommend.py](https://github.com/LeeJeongHwi/WITY/blob/main/baseline/utils/recommend.py) 참조
-
-
 
 ## 📆 프로젝트 타임라인
 
@@ -122,9 +122,7 @@ $$\text{Dense Score} = \frac{PosCnt}{PosCnt + NegCnt} PosScore - \frac{NegCnt}{P
   ┃ ┗ 📜main.py # 전체 실행파일 및 Streamlit UI
 ```
 
-
-## ⚙️ How to run
-
+## ▶️How to run
 ### 0. 데이터 준비, env 설정
 -  `[id, domain, name, main_category, category, rating, address, business_hours, price_per_one]` 으로 구성된 "장소 정보 csv 파일" 필요합니다.
 - `[id, domain, name, reviews]` 으로 구성된 "장소에 따른 리뷰 csv 파일" 필요합니다.
@@ -152,13 +150,9 @@ python baseline/db/vectordb_test_code.py # 벡터 DB 생성
 streamlit run main.py # 스트림릿 UI실행
 ```
 
-## 📊 평가
-* 요약에 대한 평가
 
-<p align="center">
-  <img src="figure/eval1.png" width="600" >
-
->G_eval 평가 방식과 독립표본-t 검정을 참고하여  긍정과 부정 리류 요약 결과에 대한 평가를 진행 하였고 평가 항목은 다음과 같습니다.
+## 📈평가
+### 리뷰 요약 모델 평가
 
 | 평가 항목     | 설명                                       | 점수 범위   |
 |---------------|--------------------------------------------|------------|
@@ -167,31 +161,57 @@ streamlit run main.py # 스트림릿 UI실행
 | **Fluency**   | 문법, 맞춤법, 문장 구조 등의 자연스러움       | 1~3점      |
 | **Relevance** | 원문의 핵심 내용을 명확히 반영하는가?       | 1~5점      |
 
+- 평가 방법
+  - **Hyper Clova X(HCX-003)** 활용한 LLM 기반 평가
+  - **LLM prompting** 기반으로 상기의 평가 항목에 대한 평가 진행
+  - 리뷰 개수에 따른 요약 성능 차이 분석을 위해, 리뷰 개수 **20개를 기준으로 두 그룹으로 구분**
+  - 각 그룹 별로 데이터 300개 샘플링하여 평가 진행
+  - 평가 신뢰도를 높이고 continuous한 score를 얻기 위해, **20회 반복 평가 수행**
 
-> 결과 : 리뷰의 갯수가 많아 질 수록 ,특히 부정적, 요약의 품질이 떨어짐에 최근 달린 리뷰들로 갯수 한정 지어 요약을 진행하였습니다.
+<p align="center">
+  <img src="figure/eval1.png" width="1000" >
+
+- 평가 결과
+  - 리뷰 개수 20개 이하인 데이터에서 대체로 높은 성적을 보였고,  
+    특히 일관성(Coherence)과 관련성(Relevance) 지표에서 차이가 두드러짐
+  - 두 그룹에 대한 독립 표본 t-test 수행 결과,  
+    coherence, relevance, consistency 세 항목에서 유의수준 0.05 기준으로 유의미한 차이를 확인
+ 
+- 결론
+  - **리뷰 개수가 많을수록 요약 성능이 떨어지는 경향성** 존재
+  - 부정적 의견을 요약할 때, 내용이 일부 누락되는 문제 발생
+  - 따라서, 적절한 리뷰 개수를 설정하여 요약하는 것이 품질 향상에 도움이 될 것으로 보임
+  - 추후에는 적절한 리뷰 개수 설정 방안 및 설정 기준 등에 대한 연구가 필요할 것으로 사료됨
 
 <br>
 
-* 경로 생성에 대한 평가
+### 경로 생성 모델 평가
+
+- 시나리오 데이터 생성
+  - 실제 사용자 활용성에 대한 평가를 위해, 사용자 요구사항 데이터 생성
+  - '성별', '연령대', '일정 시작 시간'을 랜덤하게 생성한 뒤, **'사용자 요구 사항'을 LLM을 통해 생성**
+  - '사용자 요구 사항'이 구체적이고 자세한 original dataset과 일부 내용이 생략되거나 글이 간결하게 작성된 strange dataset **두 가지 경우 상정**
+ 
+- 평가 방법
+  - **생성하지 말아야 할 경로들의 특성**을 기준으로 평가 guide-line 작성
+  - 해당 guide-line을 기준으로 LLM 평가 진행 / **gpt-4o** 활용
+  - 경로를 생성하는 **4가지 methods(few-shot(v1), few-shot(v2), CoT, Self-Refine)에** 대해 각각 평가 진행
+  - 각 methods별로 전체 데이터 중 guide-line을 모두 만족하는 데이터의 비율 비교
+      
+      $$Score=\dfrac{\text{number of data points meeting guide-lines}}{\text{number of total data points}}$$
 
 <p align="center">
   <img src="figure/eval2.png" width="600">
 
->아래와 같이 시나리오 데이터 셋을 GPT-4o를 통하여 진행하였습니다.
-<details>
+- 결과
+  - 전반적으로 만족해야 할 조건이 만은 **origin dataset이 strange dataset에서 보다 낮은 성적**을 보여줌
+  - Few-shot에서 높은 성적을 보이고 있고, **CoT와 Self-Refine에서는 상대적으로 낮은 성적**을 보임
+  - 이러한 문제는 **CoT와 Self-Refine 내부에서 guide-line을 직접적으로 활용**함으로써 성능을 개선할 수 있을 것으로 보임
 
-  <summary>시나리오 데이터</summary>
-  <p align="center">
-  <img src="figure/data_ex.png" width="600">
-
-</details>
+<br>
 <br>
 
->결과 :  먼저, Origin의 경우 매우 구체적이고, 디테일한 고객 요구 사항이 주어지는 경우를 상정했습니다. Few-shot과 CoT의 경우 80%에 근접하는 성적을 얻을 수 있었고 다음으로 Strage의 경우, 간결한 요구 사항이 주어지는 경우를 상정했습니다 요구 사항이 많지 않기 때문에 평가할 사항이 많지 않고, orgin과 비교하여 전반적으로 점수가 높은 것을 확인이 됩니다. 추가적으로 두 경우 모두 성능 향상을 위해 Self-Refine을 적용시켰으나, 충분한 향상을 이끌어내지 못하여 추후, Self-Refine을 더욱 고도화 하거나 guide-line을 평가가 아닌 Self-Refine 과정에 포함시켜 더욱 성능을 개선할 수 있을 것으로 기대됩니다.
-
-
-# 📑 추가 자료
-
+# 📄추가 자료
 [📄 프로젝트 보고서 (PDF)](report/NLP-10-기업해커톤-wrapupreport.pdf)
 
 
