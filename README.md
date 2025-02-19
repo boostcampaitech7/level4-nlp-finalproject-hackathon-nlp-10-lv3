@@ -168,7 +168,7 @@ streamlit run main.py # 스트림릿 UI실행
 <br>
 <br>
 
-## 평가
+## 📈평가
 ### 리뷰 요약 모델 평가
 
 | 평가 항목     | 설명                                       | 점수 범위   |
@@ -230,7 +230,7 @@ streamlit run main.py # 스트림릿 UI실행
 <br>
 
 
-# 추가 자료
+# 📄추가 자료
 
 [📄 프로젝트 보고서 (PDF)](report/NLP-10-기업해커톤-wrapupreport.pdf)
 
