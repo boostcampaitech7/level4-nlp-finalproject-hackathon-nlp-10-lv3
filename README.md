@@ -1,4 +1,4 @@
-# 개인화 코스 추천 시스템
+# What should I do TodaY (WITY)
 
 <p>
 
@@ -20,7 +20,7 @@
 >기간 |&nbsp;&nbsp;  25년 1월 10일 ~ 25년 2월 10일
 
 >소개 |<br>
-    &nbsp;사람의 기본적인 취향은 바뀌지 않지만 하루하루 상황과 기분은 변화할 수 있습니다.<br> 우리의 서비스는 그때그때 유저의 변화를 질문 분석을 통해 코스를 생성함으로써 새로운 경험을 전달합니다.
+    &nbsp;사람의 기본적인 취향은 바뀌지 않지만 하루하루 상황과 기분은 변화할 수 있습니다.<br> WITY는 그때그때 유저의 변화를 질문 분석을 통해 코스를 생성함으로써 새로운 경험을 전달합니다.
 
 > **참고** |&nbsp;  본 프로젝트는 현재 '서울 종로구'를 한정하여 진행되었습니다. 
 
@@ -54,120 +54,105 @@
 <br>
 <br>
 
-## 아키텍처
+
+## 🏛️ 서비스 아키텍처
 <p align="center">
   <img src="figure/arch.png" width="600">
 
->진행방법 | <br>  1) &nbsp;3사에 대한 장소정보와 리뷰 크롤링 후 전처리
-<br>  2) &nbsp;각 가게에 대한 리뷰를 요약
-<br>  3) &nbsp; 장소 정보 DB와 리뷰 벡터 DB 생성
-<br>  4) &nbsp; 사용자로 부터 질문, 나이, 장소, 시작시간, 성별 정보를 받기
-<br>  5) &nbsp;  코스 생성
-<br>   &nbsp; &nbsp; 5-1) &nbsp; CoT기반의 프롬프트 엔지니어링을 하여 하이퍼 클로버 X로 카테고리 코스 생성
-<br>   &nbsp; &nbsp; 5-2) &nbsp; 사용자 질문에 적학한 장소를 리트리버를 통하여 찾기
-<br>   &nbsp; &nbsp; 5-3) &nbsp; 사용자에게 입력받은 장소의 위도 경도를 기준으로 리트리버에서 뽑힌 장소들의 거리를 고려하여 코스 생성
-<br>  6) &nbsp;  사용자에게 생성된 코스 정보 시각화
-<br>
-<br>
+유저의 요구사항을 반영한 맞춤형 당일 일정 경로 추천을 목표로 하며, 이를 위해 카테고리 기반 경로 생성 후 최적의 장소 추천 방식을 채택하였습니다.
 
-## 프로젝트 진행 계획
+### 🗺️ 카테고리 기반 추천 코스 생성
+- "요구사항", "연령대", "성별", "일정 시작 시간"입력을 바탕으로 적절한 카테고리 기반 경로를 생성
+  - ex) `[["음식점"], ["카페"], ["체험관광"], ["음식점"]]`
+- LLM기반으로 카테고리 생성 후 파싱
+  - [category.py](https://github.com/boostcampaitech7/level4-nlp-finalproject-hackathon-nlp-10-lv3/blob/main/baseline/utils/category.py#L40) 코드 참조
+
+### 🎯 반경 내 장소 필터링
+- 사용자가 가고자하는 장소를 입력하면, 반경 500m ~ 1km 내 DB에 등록된 장소만 추출
+- Naver Search API를 통해 입력된 장소의 위도 경도를 구함
+- 입력된 장소와 DB에 있는 장소들과의 위도 경도 기반으로 Haversine 공식을 적용해 직선거리를 구해서 장소들을 필터링함
+  - [database.py](https://github.com/boostcampaitech7/level4-nlp-finalproject-hackathon-nlp-10-lv3/blob/main/baseline/db/database.py#L81) query 참조
+
+### 🔍 카테고리별 후보 장소 탐색
+- 사용자 요구사항과 반경 내 장소들의 리뷰 간 유사도 기반 검색을 수행하는 RAG 시스템
+- Milvus기반 Hybrid Search 수행
+- 요약된 긍정, 부정 리뷰와 요구사항간의 유사도 계산 후 두 값의 차를 이용해 Dense Score 계산
+$$\text{Dense Score} = \frac{PosCnt}{PosCnt + NegCnt} PosScore - \frac{NegCnt}{PosCnt+NegCnt} NegScore$$
+- [Retrieve.py](https://github.com/LeeJeongHwi/WITY/blob/main/baseline/model/Retrieve.py)
+### ⭐ 후보 장소 중 추천장소 선정
+- Retrieval로 탐색된 장소들 중에서 가장 리뷰와 유사하고 거리가 가까운 장소 선택
+- 각 카테고리별로 장소를 탐색할 때, 이전 카테고리에서 선택된 장소와 후보장소들 간의 거리를 구함
+  - TMap API를 사용해 후보 장소와 이전에 선택된 장소와의 거리와 소요시간을 구함
+- LLM Prompting으로 후보 장소 reranking 수행
+  - [recommend.py](https://github.com/LeeJeongHwi/WITY/blob/main/baseline/utils/recommend.py) 참조
+
+
+
+## 📆 프로젝트 타임라인
 
 <p align="center">
   <img src="figure/timeline.png" width="600">
 
-
-
-
 <br>
 <br>
 
-## 파일구조
+## 📂 파일구조
 
-```
+```python
   📦level4-nlp-finalproject-hackathon-nlp-10-lv3
-  ┣ 📂EDA
-  ┃ ┣ 📂concat
-  ┃ ┃ ┣ 📜cleaning_business_hours_1.ipynb
-  ┃ ┃ ┣ 📜cleaning_business_hours_2.ipynb
-  ┃ ┃ ┣ 📜eda_all_1.ipynb
-  ┃ ┃ ┣ 📜eda_all_2.ipynb
-  ┃ ┃ ┗ 📜eda_all_3.ipynb
-  ┃ ┣ 📂crawling
-  ┃ ┃ ┣ 📜eda_google_1.ipynb
-  ┃ ┃ ┣ 📜eda_kakao_1.ipynb
-  ┃ ┃ ┣ 📜eda_naver_1-1.ipynb
-  ┃ ┃ ┗ 📜eda_naver_1-2.ipynb
-  ┃ ┗ 📂figure
-  ┃ ┃ ┗ 📜EDA.ipynb
   ┣ 📂baseline
   ┃ ┃ ┗ 📜config.toml
-  ┃ ┣ 📂db
-  ┃ ┃ ┣ 📜course_rcmd.db
-  ┃ ┃ ┣ 📜course_rcmd_pos.db
-  ┃ ┃ ┣ 📜database.py
-  ┃ ┃ ┣ 📜db_test_code.py
-  ┃ ┃ ┣ 📜place_Information.db
-  ┃ ┃ ┗ 📜vectordb_test_code.py
+  ┃ ┣ 📂db # RDB, VectorDB 생성 
+  ┃ ┃ ┣ 📜database.py # Database 연결 및 select 클래스
+  ┃ ┃ ┣ 📜rdb_create_code.py # RDB 생성 코드
+  ┃ ┃ ┗ 📜vectordb_test_code.py # Vector DB 생성 코드
   ┃ ┣ 📂mapAPI
-  ┃ ┃ ┣ 📜NaverSearchAPI.py
-  ┃ ┃ ┗ 📜TMapAPI.py
+  ┃ ┃ ┣ 📜NaverSearchAPI.py # Search API
+  ┃ ┃ ┗ 📜TMapAPI.py # TMap API request 코드 및 parsing
   ┃ ┣ 📂model
-  ┃ ┃ ┣ 📜ChatModel.py
-  ┃ ┃ ┣ 📜Retrieve.py
+  ┃ ┃ ┣ 📜ChatModel.py # HyperCLOVA X Chat Model 클래스
+  ┃ ┃ ┣ 📜Retrieve.py # Retrieval 모델 클래스
   ┃ ┃ ┗ 📜sparse_embedding.pkl
   ┃ ┣ 📂utils
-  ┃ ┃ ┣ 📜category.py
-  ┃ ┃ ┣ 📜coll_name_mapping.py
-  ┃ ┃ ┣ 📜geopy_util.py
-  ┃ ┃ ┗ 📜recommend.py
+  ┃ ┃ ┣ 📜category.py # 카테고리 기반 경로 생성
+  ┃ ┃ ┣ 📜coll_name_mapping.py 
+  ┃ ┃ ┣ 📜geopy_util.py 
+  ┃ ┃ ┗ 📜recommend.py # 후보 장소 중 추천 장소 선정
   ┃ ┣ 📜.env
-  ┃ ┗ 📜main.py #실행파일
-  ┣ 📂evaluation
-  ┃ ┣ 📜configs.yaml
-  ┃ ┣ 📜evaluation.py
-  ┃ ┣ 📜make_category_route.py
-  ┃ ┣ 📜make_scenario.py
-  ┃ ┗ 📜summary_evaluation.py
-  ┣ 📂model
-  ┃ ┗ 📜sparse_embedding.pkl
-  ┣ 📂prompts
-  ┃ ┣ 📜cate_crs_eval_prmpt.yaml
-  ┃ ┣ 📜eval_summary_prompt.txt
-  ┃ ┣ 📜prompt_summary.txt
-  ┃ ┣ 📜query_prompt.txt
-  ┃ ┗ 📜system_prompt.txt
-  ┣ 📂temps
-  ┃ ┗ 📜imagetomood.py
-  ┣ 📂utils
-  ┃ ┣ 📜__init__.py
-  ┃ ┗ 📜util.py
-  ┣ 📜construct_vectorDB.py
-  ┣ 📜requirements.txt
-  ┗ 📜review_summary.py
+  ┃ ┗ 📜main.py # 전체 실행파일 및 Streamlit UI
 ```
 
 
-## How to run
+## ⚙️ How to run
 
+### 0. 데이터 준비, env 설정
+-  `[id, domain, name, main_category, category, rating, address, business_hours, price_per_one]` 으로 구성된 "장소 정보 csv 파일" 필요합니다.
+- `[id, domain, name, reviews]` 으로 구성된 "장소에 따른 리뷰 csv 파일" 필요합니다.
+
+필요한 API Key는 다음과 같습니다. baseline 폴더 내 `.env` 파일 생성 후 아래 키 설정을 해주세요.
 ```
-#사전 준비
+NAVER_MAP_API_ID = ""
+NAVER_MAP_API_KEY = ""
+NAVER_SEARCH_API_ID = ""
+NAVER_SEARCH_API_KEY = ""
+CLOVA_API_KEY = ""
+CLOVA_SERVICE_KEY = ""
+TMAP_API_KEY = ""
+```
 
-python baseline/db/db_test_code.py #SQLlite DB생성
+### 1. RDB, VectorDB 생성
+```
+python baseline/db/rdb_create_code.py #SQLlite DB생성
 python baseline/db/vectordb_test_code.py # 벡터 DB 생성
 ```
+- 각 코드 내 경로 수정이 필요합니다.
 
+### 2. UI 실행
 ```
-#서비스 코드 실행
-
-cd baseline
 streamlit run main.py # 스트림릿 UI실행
 ```
 
-
-<br>
-<br>
-
-## 평가
+## 📊 평가
 * 요약에 대한 평가
 
 <p align="center">
@@ -205,27 +190,7 @@ streamlit run main.py # 스트림릿 UI실행
 >결과 :  먼저, Origin의 경우 매우 구체적이고, 디테일한 고객 요구 사항이 주어지는 경우를 상정했습니다. Few-shot과 CoT의 경우 80%에 근접하는 성적을 얻을 수 있었고 다음으로 Strage의 경우, 간결한 요구 사항이 주어지는 경우를 상정했습니다 요구 사항이 많지 않기 때문에 평가할 사항이 많지 않고, orgin과 비교하여 전반적으로 점수가 높은 것을 확인이 됩니다. 추가적으로 두 경우 모두 성능 향상을 위해 Self-Refine을 적용시켰으나, 충분한 향상을 이끌어내지 못하여 추후, Self-Refine을 더욱 고도화 하거나 guide-line을 평가가 아닌 Self-Refine 과정에 포함시켜 더욱 성능을 개선할 수 있을 것으로 기대됩니다.
 
 
-
-
-
-<br>
-<br>
-
-## Commit Rule
-<br>
-
-| **유형**  | **설명** |
-|----------------|----------------------------------------|
-| **feat**       | 기능 (새로운 기능)                     |
-| **fix**        | 버그 (버그 수정)                       |
-| **refactor**   |리팩토링                                |
-| **style**      | 스타일 (코드 형식, 세미콜론 추가: 비즈니스 로직에 변경 없음) |
-| **docs**       | 문서 (문서 추가, 수정, 삭제)           |
-| **test**       | 테스트 (테스트 코드 추가, 수정, 삭제: 비즈니스 로직에 변경 없음) |
-| **chore**      | 기타 변경사항 (빌드 스크립트 수정 등)  |
-
-
-# 추가 자료
+# 📑 추가 자료
 
 [📄 프로젝트 보고서 (PDF)](report/NLP-10-기업해커톤-wrapupreport.pdf)
 

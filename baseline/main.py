@@ -388,11 +388,11 @@ def show_result() -> None:
             seen_names[location_name] = i
 
     # 최종적으로 상태 확인하기
-    print("최종 candidates_per_category:")
-    print(st.session_state.candidates_per_category)
+    # print("최종 candidates_per_category:")
+    # print(st.session_state.candidates_per_category)
 
-    print("최종 current_course:")
-    print(st.session_state.current_course)
+    # print("최종 current_course:")
+    # print(st.session_state.current_course)
 
     # 입력 정보 요약
     with st.expander("입력하신 정보", expanded=False):

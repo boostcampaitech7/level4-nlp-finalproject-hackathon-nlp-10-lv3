@@ -170,7 +170,7 @@ class Recommend():
       
       # 최종 질문 추가
       user_prompt_template += "추천할 장소를 선택하고 이유를 설명해 주세요."
-      
+      print(user_prompt_template)
       return user_prompt_template
 
    def get_template_message(self, system_prompt, user_prompt):
