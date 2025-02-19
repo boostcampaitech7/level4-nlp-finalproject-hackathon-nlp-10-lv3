@@ -185,7 +185,7 @@ streamlit run main.py # 스트림릿 UI실행
   - 평가 신뢰도를 높이고 continuous한 score를 얻기 위해, **20회 반복 평가 수행**
 
 <p align="center">
-  <img src="figure/eval1.png" width="800" >
+  <img src="figure/eval1.png" width="1000" >
 
 - 평가 결과
   - 리뷰 개수 20개 이하인 데이터에서 대체로 높은 성적을 보였고,  
