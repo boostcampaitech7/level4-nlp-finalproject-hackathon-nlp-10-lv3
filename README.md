@@ -59,7 +59,7 @@
 ## 🏛️ 서비스 아키텍처
 
 <p align="center">
-  <img src="figure/arch.png" width="1000">
+  <img src="figure/arch.png">
 
 유저의 요구사항을 반영한 맞춤형 당일 일정 경로 추천을 목표로 하며, 이를 위해 카테고리 기반 경로 생성 후 최적의 장소 추천 방식을 채택하였습니다.
 
@@ -91,7 +91,7 @@ $$\text{Dense Score} = \frac{PosCnt}{PosCnt + NegCnt} PosScore - \frac{NegCnt}{P
 ## 📆 프로젝트 타임라인
 
 <p align="center">
-  <img src="figure/timeline.png" width="600">
+  <img src="figure/timeline.png">
 
 <br>
 <br>
